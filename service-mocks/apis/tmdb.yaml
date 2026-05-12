@@ -1,0 +1,1782 @@
+openapi: "3.0.0"
+info:
+  title: TMDB
+  version: "1.0"
+  description: The Movie Database (TMDB) API mock for Microcks
+
+paths:
+  /search/person:
+    get:
+      operationId: searchPerson
+      summary: Search for people
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Sofia Coppola
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        known_for_department:
+                          type: string
+              example:
+                results:
+                  - id: 1769
+                    name: "Sofia Coppola"
+                    known_for_department: "Directing"
+
+  /search/movie:
+    get:
+      operationId: searchMovie
+      summary: Search for movies
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Titanic
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        release_date:
+                          type: string
+              example:
+                results:
+                  - id: 597
+                    title: "Titanic"
+                    release_date: "1997-11-18"
+
+  /search/collection:
+    get:
+      operationId: searchCollection
+      summary: Search for collections
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Star Wars
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                results:
+                  - id: 10
+                    name: "Star Wars Collection"
+
+  /search/company:
+    get:
+      operationId: searchCompany
+      summary: Search for companies
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Walt Disney
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                results:
+                  - id: 2
+                    name: "Walt Disney Pictures"
+
+  /search/tv:
+    get:
+      operationId: searchTv
+      summary: Search for TV shows
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Breaking Bad
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        first_air_date:
+                          type: string
+              example:
+                results:
+                  - id: 1396
+                    name: "Breaking Bad"
+                    first_air_date: "2008-01-20"
+
+  /person/{person_id}/movie_credits:
+    get:
+      operationId: getPersonMovieCredits
+      summary: Get movie credits for a person
+      parameters:
+        - name: person_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1769
+      responses:
+        "200":
+          description: Movie credits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        character:
+                          type: string
+                  crew:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        job:
+                          type: string
+              example:
+                cast:
+                  - id: 597
+                    title: "Titanic"
+                    character: "Rose DeWitt Bukater"
+                crew:
+                  - id: 597
+                    title: "Titanic"
+                    job: "Director"
+
+  /person/{person_id}/tv_credits:
+    get:
+      operationId: getPersonTvCredits
+      summary: Get TV credits for a person
+      parameters:
+        - name: person_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1769
+      responses:
+        "200":
+          description: TV credits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        character:
+                          type: string
+                  crew:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        job:
+                          type: string
+              example:
+                crew:
+                  - id: 1421
+                    name: "The Last of Us"
+                    job: "Director"
+
+  /person/{person_id}/images:
+    get:
+      operationId: getPersonImages
+      summary: Get images for a person
+      parameters:
+        - name: person_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1769
+      responses:
+        "200":
+          description: Person images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profiles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+                        width:
+                          type: integer
+                        height:
+                          type: integer
+              example:
+                profiles:
+                  - file_path: "/8a9c1d2e3f4g5h6i7j8k.jpg"
+                    width: 300
+                    height: 450
+
+  /person/{person_id}:
+    get:
+      operationId: getPersonDetails
+      summary: Get person details
+      parameters:
+        - name: person_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1769
+      responses:
+        "200":
+          description: Person details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  birthday:
+                    type: string
+                  biography:
+                    type: string
+              example:
+                id: 1769
+                name: "Sofia Coppola"
+                birthday: "1971-05-14"
+                biography: "Sofia Carmina Coppola is an American film director and screenwriter."
+
+  /person/popular:
+    get:
+      operationId: getPopularPersons
+      summary: Get popular people
+      responses:
+        "200":
+          description: Popular people
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        popularity:
+                          type: number
+              example:
+                results:
+                  - id: 1769
+                    name: "Sofia Coppola"
+                    popularity: 25.3
+
+  /movie/{movie_id}/credits:
+    get:
+      operationId: getMovieCredits
+      summary: Get movie credits (cast and crew)
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Movie credits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        character:
+                          type: string
+                        order:
+                          type: integer
+                  crew:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        job:
+                          type: string
+              example:
+                cast:
+                  - id: 6193
+                    name: "Leonardo DiCaprio"
+                    character: "Jack Dawson"
+                    order: 0
+                  - id: 1769
+                    name: "Kate Winslet"
+                    character: "Rose DeWitt Bukater"
+                    order: 1
+                crew:
+                  - id: 2710
+                    name: "James Cameron"
+                    job: "Director"
+
+  /movie/{movie_id}:
+    get:
+      operationId: getMovieDetails
+      summary: Get movie details
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Movie details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  release_date:
+                    type: string
+                  genres:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                  production_companies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                id: 597
+                title: "Titanic"
+                release_date: "1997-11-18"
+                genres:
+                  - id: 18
+                    name: "Drama"
+                  - id: 10749
+                    name: "Romance"
+                production_companies:
+                  - id: 4
+                    name: "Paramount Pictures"
+
+  /movie/{movie_id}/images:
+    get:
+      operationId: getMovieImages
+      summary: Get movie images
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Movie images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backdrops:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+                        width:
+                          type: integer
+                        height:
+                          type: integer
+                  posters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+                        width:
+                          type: integer
+                        height:
+                          type: integer
+              example:
+                posters:
+                  - file_path: "/9c1d2e3f4g5h6i7j8k9l.jpg"
+                    width: 500
+                    height: 750
+
+  /movie/{movie_id}/keywords:
+    get:
+      operationId: getMovieKeywords
+      summary: Get movie keywords
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Movie keywords
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keywords:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                keywords:
+                  - id: 985
+                    name: "ship"
+                  - id: 1655
+                    name: "love"
+
+  /movie/{movie_id}/reviews:
+    get:
+      operationId: getMovieReviews
+      summary: Get movie reviews
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Movie reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        author:
+                          type: string
+                        content:
+                          type: string
+              example:
+                results:
+                  - author: "John Doe"
+                    content: "A masterpiece of cinema."
+
+  /movie/{movie_id}/similar:
+    get:
+      operationId: getSimilarMovies
+      summary: Get similar movies
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Similar movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+              example:
+                results:
+                  - id: 550
+                    title: "The Dark Knight"
+
+  /movie/{movie_id}/recommendations:
+    get:
+      operationId: getMovieRecommendations
+      summary: Get movie recommendations
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+              example:
+                results:
+                  - id: 550
+                    title: "The Dark Knight"
+
+  /movie/{movie_id}/release_dates:
+    get:
+      operationId: getMovieReleaseDates
+      summary: Get movie release dates
+      parameters:
+        - name: movie_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 597
+      responses:
+        "200":
+          description: Release dates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        iso_3166_1:
+                          type: string
+                        release_dates:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              certification:
+                                type: string
+                              release_date:
+                                type: string
+              example:
+                results:
+                  - iso_3166_1: "US"
+                    release_dates:
+                      - certification: "PG-13"
+                        release_date: "1997-12-19T00:00:00.000Z"
+
+  /movie/top_rated:
+    get:
+      operationId: getTopRatedMovies
+      summary: Get top rated movies
+      responses:
+        "200":
+          description: Top rated movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        vote_average:
+                          type: number
+              example:
+                results:
+                  - id: 278
+                    title: "The Shawshank Redemption"
+                    vote_average: 8.7
+
+  /movie/popular:
+    get:
+      operationId: getPopularMovies
+      summary: Get popular movies
+      responses:
+        "200":
+          description: Popular movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        popularity:
+                          type: number
+              example:
+                results:
+                  - id: 597
+                    title: "Titanic"
+                    popularity: 120.5
+
+  /movie/now_playing:
+    get:
+      operationId: getNowPlayingMovies
+      summary: Get now playing movies
+      responses:
+        "200":
+          description: Now playing movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+              example:
+                results:
+                  - id: 597
+                    title: "Oppenheimer"
+
+  /movie/latest:
+    get:
+      operationId: getLatestMovie
+      summary: Get latest movie
+      responses:
+        "200":
+          description: Latest movie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  release_date:
+                    type: string
+              example:
+                id: 12345
+                title: "Oppenheimer"
+                release_date: "2023-07-19"
+
+  /collection/{collection_id}:
+    get:
+      operationId: getCollectionDetails
+      summary: Get collection details
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      responses:
+        "200":
+          description: Collection details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  parts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        release_date:
+                          type: string
+              example:
+                id: 10
+                name: "Star Wars Collection"
+                parts:
+                  - id: 11
+                    title: "Star Wars"
+                    release_date: "1977-05-25"
+
+  /collection/{collection_id}/images:
+    get:
+      operationId: getCollectionImages
+      summary: Get collection images
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      responses:
+        "200":
+          description: Collection images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backdrops:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+                  posters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+              example:
+                backdrops:
+                  - file_path: "/a1b2c3d4e5f6g7h8i9j0.jpg"
+
+  /company/{company_id}:
+    get:
+      operationId: getCompanyDetails
+      summary: Get company details
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 2
+      responses:
+        "200":
+          description: Company details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  headquarters:
+                    type: string
+                  origin_country:
+                    type: string
+              example:
+                id: 2
+                name: "Walt Disney Pictures"
+                headquarters: "500 S. Buena Vista Street, Burbank, California"
+                origin_country: "US"
+
+  /company/{company_id}/images:
+    get:
+      operationId: getCompanyImages
+      summary: Get company images
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 2
+      responses:
+        "200":
+          description: Company images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+                        width:
+                          type: integer
+                        height:
+                          type: integer
+              example:
+                logos:
+                  - file_path: "/d1e2f3g4h5i6j7k8l9m0.jpg"
+                    width: 200
+                    height: 100
+
+  /trending/{media_type}/{time_window}:
+    get:
+      operationId: getTrending
+      summary: Get trending movies/TV
+      parameters:
+        - name: media_type
+          in: path
+          required: true
+          schema:
+            type: string
+          example: movie
+        - name: time_window
+          in: path
+          required: true
+          schema:
+            type: string
+          example: day
+      responses:
+        "200":
+          description: Trending results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        media_type:
+                          type: string
+              example:
+                results:
+                  - id: 597
+                    title: "Oppenheimer"
+                    media_type: "movie"
+
+  /tv/{tv_id}:
+    get:
+      operationId: getTvDetails
+      summary: Get TV show details
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: TV show details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  first_air_date:
+                    type: string
+                  number_of_seasons:
+                    type: integer
+                  number_of_episodes:
+                    type: integer
+                  genres:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                  networks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                  production_companies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                id: 1396
+                name: "Breaking Bad"
+                first_air_date: "2008-01-20"
+                number_of_seasons: 5
+                number_of_episodes: 62
+                genres:
+                  - id: 18
+                    name: "Drama"
+                networks:
+                  - id: 174
+                    name: "AMC"
+                production_companies:
+                  - id: 110
+                    name: "Sony Pictures Television"
+
+  /tv/{tv_id}/credits:
+    get:
+      operationId: getTvCredits
+      summary: Get TV show credits
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: TV credits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        character:
+                          type: string
+                  crew:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        job:
+                          type: string
+              example:
+                cast:
+                  - id: 17419
+                    name: "Bryan Cranston"
+                    character: "Walter White"
+
+  /tv/{tv_id}/images:
+    get:
+      operationId: getTvImages
+      summary: Get TV show images
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: TV images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backdrops:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+                  posters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+              example:
+                posters:
+                  - file_path: "/e1f2g3h4i5j6k7l8m9n0.jpg"
+
+  /tv/{tv_id}/keywords:
+    get:
+      operationId: getTvKeywords
+      summary: Get TV show keywords
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: TV keywords
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                results:
+                  - id: 234
+                    name: "drug cartel"
+
+  /tv/{tv_id}/reviews:
+    get:
+      operationId: getTvReviews
+      summary: Get TV show reviews
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: TV reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        author:
+                          type: string
+                        content:
+                          type: string
+              example:
+                results:
+                  - author: "Jane Doe"
+                    content: "One of the greatest TV shows ever made."
+
+  /tv/{tv_id}/similar:
+    get:
+      operationId: getTvSimilar
+      summary: Get similar TV shows
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: Similar TV shows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                results:
+                  - id: 1695
+                    name: "Better Call Saul"
+
+  /tv/{tv_id}/recommendations:
+    get:
+      operationId: getTvRecommendations
+      summary: Get TV show recommendations
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                results:
+                  - id: 1695
+                    name: "Better Call Saul"
+
+  /tv/popular:
+    get:
+      operationId: getPopularTv
+      summary: Get popular TV shows
+      responses:
+        "200":
+          description: Popular TV shows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        popularity:
+                          type: number
+              example:
+                results:
+                  - id: 1396
+                    name: "Breaking Bad"
+                    popularity: 200.5
+
+  /tv/top_rated:
+    get:
+      operationId: getTopRatedTv
+      summary: Get top rated TV shows
+      responses:
+        "200":
+          description: Top rated TV shows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        vote_average:
+                          type: number
+              example:
+                results:
+                  - id: 1396
+                    name: "Breaking Bad"
+                    vote_average: 9.3
+
+  /tv/on_the_air:
+    get:
+      operationId: getOnTheAirTv
+      summary: Get TV shows currently on the air
+      responses:
+        "200":
+          description: On the air TV shows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                results:
+                  - id: 1421
+                    name: "The Last of Us"
+
+  /tv/{tv_id}/season/{season_number}:
+    get:
+      operationId: getTvSeason
+      summary: Get TV season details
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+        - name: season_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: Season details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  season_number:
+                    type: integer
+                  air_date:
+                    type: string
+                  episodes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        episode_number:
+                          type: integer
+              example:
+                id: 3624
+                season_number: 1
+                air_date: "2008-01-20"
+                episodes:
+                  - id: 62085
+                    name: "Pilot"
+                    episode_number: 1
+
+  /tv/{tv_id}/season/{season_number}/credits:
+    get:
+      operationId: getTvSeasonCredits
+      summary: Get TV season credits
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+        - name: season_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: Season credits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        character:
+                          type: string
+                  crew:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        job:
+                          type: string
+              example:
+                crew:
+                  - id: 66633
+                    name: "Vince Gilligan"
+                    job: "Director"
+
+  /tv/{tv_id}/season/{season_number}/images:
+    get:
+      operationId: getTvSeasonImages
+      summary: Get TV season images
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+        - name: season_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: Season images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+              example:
+                posters:
+                  - file_path: "/f1g2h3i4j5k6l7m8n9o0.jpg"
+
+  /tv/{tv_id}/season/{season_number}/episode/{episode_number}:
+    get:
+      operationId: getTvEpisode
+      summary: Get TV episode details
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+        - name: season_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+        - name: episode_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: Episode details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  overview:
+                    type: string
+                  air_date:
+                    type: string
+              example:
+                id: 62085
+                name: "Pilot"
+                overview: "Walter White, a chemistry teacher, discovers that he has cancer."
+                air_date: "2008-01-20"
+
+  /tv/{tv_id}/season/{season_number}/episode/{episode_number}/credits:
+    get:
+      operationId: getTvEpisodeCredits
+      summary: Get TV episode credits
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+        - name: season_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+        - name: episode_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: Episode credits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        character:
+                          type: string
+                  crew:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        job:
+                          type: string
+              example:
+                guest_stars:
+                  - id: 66633
+                    name: "Vince Gilligan"
+                    character: "Himself"
+
+  /tv/{tv_id}/season/{season_number}/episode/{episode_number}/images:
+    get:
+      operationId: getTvEpisodeImages
+      summary: Get TV episode images
+      parameters:
+        - name: tv_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1396
+        - name: season_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+        - name: episode_number
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          description: Episode images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stills:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+              example:
+                stills:
+                  - file_path: "/g1h2i3j4k5l6m7n8o9p0.jpg"
+
+  /network/{network_id}:
+    get:
+      operationId: getNetworkDetails
+      summary: Get network details
+      parameters:
+        - name: network_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 174
+      responses:
+        "200":
+          description: Network details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  headquarters:
+                    type: string
+                  origin_country:
+                    type: string
+              example:
+                id: 174
+                name: "AMC"
+                headquarters: "New York, NY"
+                origin_country: "US"
+
+  /network/{network_id}/images:
+    get:
+      operationId: getNetworkImages
+      summary: Get network images
+      parameters:
+        - name: network_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 174
+      responses:
+        "200":
+          description: Network images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        file_path:
+                          type: string
+              example:
+                logos:
+                  - file_path: "/h1i2j3k4l5m6n7o8p9q0.jpg"
+
+  /discover/movie:
+    get:
+      operationId: discoverMovie
+      summary: Discover movies by criteria
+      parameters:
+        - name: language
+          in: query
+          schema:
+            type: string
+          example: en
+        - name: vote_average_gte
+          in: query
+          schema:
+            type: number
+          example: 7.0
+        - name: primary_release_date_gte
+          in: query
+          schema:
+            type: string
+          example: "2021-01-01"
+      responses:
+        "200":
+          description: Discovered movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                        vote_average:
+                          type: number
+                        release_date:
+                          type: string
+                        original_language:
+                          type: string
+              example:
+                results:
+                  - id: 597
+                    title: "Titanic"
+                    vote_average: 7.9
+                    release_date: "1997-11-18"
+                    original_language: "en"

@@ -1,0 +1,393 @@
+--- Query #1 [single-get] [" ""single-goal""  "] ---
+Q: Are there any rubbish bins in the city that urgently need to be emptied?
+Oracle: [('GET', '/bin')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 66.00s
+
+--- Query #2 [single-get] [" ""single-goal""  "] ---
+Q: What tourist spots can I visit in the city today?
+Oracle: [('GET', '/attraction')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 59.63s
+
+--- Query #3 [single-get] [" ""single-goal""  "] ---
+Q: I have an electric car. Where can I charge it right now?
+Oracle: [('GET', '/charging-station')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 56.20s
+
+--- Query #4 [get-then-get] [" ""single-goal""  "] ---
+Q: Are there any street lights in the city that are currently switched off or not working?
+Oracle: [('GET', '/light'), ('GET', '/light')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 62.53s
+
+--- Query #5 [single-get] [" ""single-goal""  "] ---
+Q: Which emergency vehicles are currently available to respond?
+Oracle: [('GET', '/emergency-unit')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 54.40s
+
+--- Query #6 [single-get] [" ""single-goal""  "] ---
+Q: Are any public buses running late right now?
+Oracle: [('GET', '/vehicle')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 57.10s
+
+--- Query #7 [single-get] [" ""single-goal""  "] ---
+Q: Is the air quality around the city acceptable right now?
+Oracle: [('GET', '/sensor')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 61.47s
+
+--- Query #8 [single-get] [" ""single-goal""  "] ---
+Q: Where can I park my car in the city right now?
+Oracle: [('GET', '/parking-spot')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 56.67s
+
+--- Query #9 [single-get] [" ""single-goal""  "] ---
+Q: Is the city centre busy with traffic right now?
+Oracle: [('GET', '/traffic-sensor')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 62.25s
+
+--- Query #10 [single-get] [" ""single-goal""  "] ---
+Q: I use a wheelchair. Which attractions in the city are accessible to me today?
+Oracle: [('GET', '/attraction')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 60.89s
+
+--- Query #11 [cross-service] [" ""two-service""  "] ---
+Q: I want to visit something interesting today. Is there somewhere I can also find parking nearby?
+Oracle: [('GET', '/attraction'), ('GET', '/parking-spot')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 74.01s
+
+--- Query #12 [cross-service] [" ""two-service""  "] ---
+Q: I want to go for a run outside. Are there parts of the city with little traffic and clean air?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/sensor')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 78.43s
+
+--- Query #13 [cross-service] [" ""two-service""  "] ---
+Q: I need to charge my electric car but I'd rather avoid congested streets. Where should I head?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/charging-station'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=1 FN=0 F1=0.800
+    L1_plan: PASS
+      - {'task': ('GET', '/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor')}
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 76.85s
+
+--- Query #14 [cross-service] [" ""two-service""  "] ---
+Q: I've heard some parts of the city have bad traffic right now. Are there tourist spots in a less congested area?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/attraction')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 70.40s
+
+--- Query #15 [cross-service] [" ""two-service""  "] ---
+Q: There seems to be a big traffic jam somewhere. Are emergency services available in that area?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/emergency-unit')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 70.26s
+
+--- Query #16 [cross-service] [" ""two-service""  "] ---
+Q: I want to spend the afternoon somewhere the air is clean. Is there anything worth visiting there?
+Oracle: [('GET', '/sensor'), ('GET', '/attraction'), ('SQL', ''), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 77.53s
+
+--- Query #17 [cross-service] [" ""two-service""  "] ---
+Q: I'm a city worker doing rounds. Which areas have both overflowing bins and heavy traffic at the same time?
+Oracle: [('GET', '/bin'), ('GET', '/traffic-sensor'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 65.58s
+
+--- Query #18 [cross-service] [" ""two-service""  "] ---
+Q: I want to drive into the city without getting stuck in traffic. Where are there still free parking spots?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/parking-spot')]
+Aggregato: PARTIAL  Pass@1=False  Pass@K=False  Consistency=100%
+
+  Run 1:
+    Final: PARTIAL  TP=1 FP=0 FN=1 F1=0.667
+    L1_plan: PARTIAL
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 59.23s
+
+--- Query #19 [cross-service] [" ""two-service""  "] ---
+Q: I've heard the air quality is bad in some parts of the city. Are there free parking spots somewhere the air is clean?
+Oracle: [('GET', '/sensor'), ('GET', '/parking-spot'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 64.00s
+
+--- Query #20 [cross-service] [" ""two-service""  "] ---
+Q: The bus I take to work is running late. Is there a lot of traffic along its usual route?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/vehicle'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 66.60s
+
+--- Query #21 [cross-service] [" ""two-service""  "] ---
+Q: I want to take my kids somewhere nice today. Are there things to visit in an area where the air is clean?
+Oracle: [('GET', '/sensor'), ('GET', '/attraction'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 70.49s
+
+--- Query #22 [cross-service] [" ""two-service""  "] ---
+Q: Which parts of the city have both street lights switched off and bins that haven't been emptied?
+Oracle: [('GET', '/light'), ('GET', '/bin'), ('GET', '/bin'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=3 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 65.36s
+
+--- Query #23 [cross-service] [" ""two-service""  "] ---
+Q: I'm nearly out of battery and I'd like to visit something. Is there a charger close to any open attraction?
+Oracle: [('GET', '/attraction'), ('GET', '/charging-station'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 72.04s
+
+--- Query #24 [cross-service] [" ""two-service""  "] ---
+Q: Are there buildings in parts of the city where the environment seems unhealthy right now?
+Oracle: [('GET', '/sensor'), ('GET', '/building')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 70.51s
+
+--- Query #25 [cross-service] [" ""three-service"""] ---
+Q: I want to spend a nice afternoon out. Where in the city has clean air, something interesting to see, and parking available?
+Oracle: [('GET', '/sensor'), ('GET', '/attraction'), ('GET', '/parking-spot'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=3 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 68.06s
+
+--- Query #26 [cross-service] [" ""three-service"""] ---
+Q: I'm driving in for a bit of sightseeing. Where should I go to avoid heavy traffic, find something to visit, and park easily?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/attraction'), ('GET', '/parking-spot'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=3 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 67.30s
+
+--- Query #27 [cross-service] [" ""three-service"""] ---
+Q: I'm in a wheelchair and want to go out today. I need somewhere accessible, with decent air quality and a parking spot.
+Oracle: [('GET', '/sensor'), ('GET', '/attraction'), ('GET', '/parking-spot')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=3 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 66.59s
+
+--- Query #28 [cross-service] [" ""three-service"""] ---
+Q: Which parts of the city are in the worst shape right now, with street lights off, full bins, and traffic problems all at once?
+Oracle: [('GET', '/light'), ('GET', '/bin'), ('GET', '/traffic-sensor'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=3 FP=1 FN=0 F1=0.857
+    L1_plan: PASS
+      - {'task': ('GET', '/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor')}
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 81.00s
+
+--- Query #29 [cross-service] [" ""three-service"""] ---
+Q: The city feels chaotic today. Where is there heavy congestion, delayed public transport, and few emergency units available?
+Oracle: [('GET', '/traffic-sensor'), ('GET', '/vehicle'), ('GET', '/emergency-unit')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=3 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 68.37s
+
+--- Query #30 [cross-service] [" ""three-service"""] ---
+Q: I want somewhere calm to go, with something to do and a place to park. What would you suggest?
+Oracle: [('GET', '/attraction'), ('GET', '/parking-spot'), ('SQL', '')]
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=2 FP=1 FN=0 F1=0.800
+    L1_plan: PASS
+      - {'task': ('GET', '/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor')}
+    L2_execution: PASS
+    L3_chaining: PASS
+    L4_schema: PASS
+    Latency: 74.38s
+

@@ -1,0 +1,81 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Ambienti virtuali
+.venv/
+venv/
+env/
+
+# ── Java / Maven / Quarkus ────────────────────────────────────────────────────
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+.flattened-pom.xml
+/.quarkus/cli/plugins/
+.certs/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# Non ignorare Dockerfile o Compose.yaml — sono parte del progetto
+# Ignora solo artefatti locali di build
+.docker/
+
+# ── Variabili d'ambiente e segreti ────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.pi.example
+
+# ── Log e file temporanei ─────────────────────────────────────────────────────
+*.log
+test.txt
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# File generati dall'api-importer
+Files/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+# VSCode
+.vscode/
+*.code-workspace
+
+# IntelliJ / PyCharm
+.idea/
+*.ipr
+*.iml
+*.iws
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# NetBeans
+nb-configuration.xml
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── HuggingFace / ML ─────────────────────────────────────────────────────────
+# I modelli vengono scaricati a runtime, non vanno committati
+*.safetensors
+*.bin
+*.onnx

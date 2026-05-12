@@ -1,0 +1,202 @@
+[
+  {
+    "question_index": 1,
+    "run": 1,
+    "question": "Where can I borrow a Roman history novel at the city library?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Roman history novels in city library | MAP: no library service in catalog | CHAIN: none | COMBINE: single task | FILTER: N/A | VALIDATE: ✗ No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 2,
+    "run": 1,
+    "question": "Which pharmacies are open right now near the historic centre?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find open pharmacies near historic centre | MAP: smart-tourist-attractions-mock / GET /attraction (category=palace/monument in Z-CENTRO) + smart-buildings-mock / GET /building (buildingType=healthcare, status=operational) | CHAIN: none (no direct link between attractions and buildings) | COMBINE: single task (no service provides 'pharmacy' data) | FILTER: none | VALIDATE: ✗ No service in catalog provides pharmacy data. The catalog has 'healthcare' buildings but not specifically 'pharmacies'. The query cannot be satisfied.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 3,
+    "run": 1,
+    "question": "Find me a hotel room under 100 euro for tonight",
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 5,
+    "run": 1,
+    "question": "Is there any live music concert tonight in Benevento?",
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 6,
+    "run": 1,
+    "question": "Will it rain tomorrow morning in the city?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: forecast for rain tomorrow morning | MAP: no service in catalog provides weather forecasts or precipitation data | CHAIN: none | COMBINE: none | FILTER: none | VALIDATE: No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 7,
+    "run": 1,
+    "question": "Is there a water supply outage in zone Z-CENTRO?",
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 8,
+    "run": 1,
+    "question": "Where is the closest ATM to the train station?",
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 9,
+    "run": 1,
+    "question": "Show me something interesting",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find interesting tourist attractions | MAP: smart-tourist-attractions-mock / GET /attraction | CHAIN: none | COMBINE: single task | FILTER: no specific constraint, return all open attractions | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 10,
+    "run": 1,
+    "question": "Help me with the city",
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 11,
+    "run": 1,
+    "question": "What can you do?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: The user is asking for a general capability overview, not a specific data retrieval or action. No specific data from the catalog is required to answer 'What can you do?'. MAP: No services are needed as this is a meta-query about the system's capabilities. CHAIN: none. COMBINE: single task (conceptually, but no API calls are needed). FILTER: none. VALIDATE: ✓ The query does not map to any specific service operation in the catalog. The catalog contains specific CRUD operations for citizens, tourists, emergency, buildings, traffic, and bins, but no 'list capabilities' endpoint exists. Therefore, no tasks can be generated to satisfy this specific query via the API.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 12,
+    "run": 1,
+    "question": "Tell me what is happening",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: broad status overview requires checking for active alerts, incidents, and critical congestion across all zones | MAP: smart-environment-and-temperature-sensors-mock (alertActive=true), smart-traffic-monitoring-mock (incidentDetected=true), smart-traffic-monitoring-mock (congestionLevel=critical) | CHAIN: none (independent queries) | COMBINE: single task (returning first available alert/incident) | FILTER: alertActive=true, incidentDetected=true, congestionLevel=critical | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_active_environmental_alerts",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?alertActive=true"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_traffic_incidents",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?incidentDetected=true"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_critical_congestion",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=critical"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 13,
+    "run": 1,
+    "question": "List all rubbish bins in zone Z-MARTE",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: list bins in zone Z-MARTE | MAP: smart-bins-mock / GET /bin | CHAIN: none | COMBINE: single task | FILTER: zoneId=Z-MARTE | VALIDATE: Z-MARTE is not in the catalog enum (Z-CENTRO,Z-NORD,Z-SUD,Z-EST,Z-OVEST). No available service can fulfil this request with the given zone.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 14,
+    "run": 1,
+    "question": "Show me radiation sensors that have an alert active",
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 15,
+    "run": 1,
+    "question": "Find helicopter public transport vehicles that are running late",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find public transport vehicles with status 'delayed' | MAP: smart-public-transport-mock / GET /vehicle | CHAIN: none | COMBINE: single task | FILTER: status=delayed (catalog enum) | VALIDATE: ✗ vehicleType 'helicopter' not in catalog enum (bus,tram,metro,ferry). No service supports helicopters. | VALIDATE: No available service can fulfil this request.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 16,
+    "run": 1,
+    "question": "Show emergency units that are both idle and responding at the same time",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find emergency units with status=idle AND status=responding | MAP: smart-emergency-services-mock / GET /emergency-unit | CHAIN: none | COMBINE: single task | FILTER: status parameter cannot hold two enum values simultaneously; the query describes a logical impossibility given the schema (status is a single enum) | VALIDATE: ✗ No available service can fulfil this request because the schema enforces a single status value per unit, making 'idle AND responding' impossible to query.",
+      "tasks": []
+    }
+  },
+  {
+    "question_index": 17,
+    "run": 1,
+    "question": "List bins that are 0% full and overflowing simultaneously",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find bins with fillLevel=0 AND status=overflowing | MAP: smart-bins-mock / GET /bin | CHAIN: none | COMBINE: single task | FILTER: status=overflowing (catalog enum); fillLevel=0 is a numeric threshold not supported by the mock's single-filter constraint, so I must fetch all overflowing bins and filter client-side (or note the constraint). However, the mock only supports one filter. I will fetch status=overflowing. The user asks for a logical AND (0% AND overflowing). Since the API cannot filter by fillLevel in the same request, and I cannot combine filters, I must return the set of overflowing bins and note that the 0% condition cannot be enforced by the API. Wait, the instruction says 'produce ONLY a valid JSON execution plan'. If the API cannot satisfy the exact query, I should check if I can do it via SQL. I can fetch all overflowing bins, then use SQL to filter fillLevel=0. | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-bins-mock",
+          "task_name": "get_overflowing_bins",
+          "url": "http://mock-server:8080/rest/Smart+Bins+API/1.0/bin?status=overflowing"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT * FROM get_overflowing_bins WHERE fillLevel = 0"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "filter_zero_fill_overflowing",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 18,
+    "run": 1,
+    "question": "Show parking spots with spotType 'underwater'",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find parking spots with spotType 'underwater' | MAP: smart-parking-mock / GET /parking-spot | CHAIN: none | COMBINE: single task | FILTER: spotType=underwater | VALIDATE: spotType 'underwater' is not in the catalog enum (standard,disabled,electric,motorcycle,reserved). The catalog is the only source of truth. No available service can fulfil this request with the specified invalid enum value.",
+      "tasks": []
+    }
+  }
+]

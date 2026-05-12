@@ -1,0 +1,35 @@
+
+========================================================================
+RIEPILOGO FINALE
+========================================================================
+Query eseguite: 18
+  ✅ CORRECT:     12  (66.7%)
+  🟡 PARTIAL:      0  (0.0%)
+  ❌ INCORRECT:    5  (27.8%)
+  ⚠️  ERROR:        1  (5.6%)
+
+Out-of-plan breakdown (18 query):
+  ambiguous          2/4   50.0% 🟡
+  invalid            3/6   50.0% 🟡
+  out-of-domain      7/8   87.5% 🟢
+
+Affidabilità:
+  Pass@1 (prima run corretta):      66.7%
+  Pass@K (almeno una run corretta): 66.7%
+  Consistency media (piano stabile):94.4%
+
+Metriche endpoint L1 (prima run, micro):
+  TP=12  FP=0  FN=5
+  Micro F1=0.828   Macro F1=0.706
+
+Latenza: Media=75.8s  Mediana=79.9s  Max=90.0s
+
+Per categoria:
+  Categoria                Tot   OK  Part  Wrong  Err    P@1  P@K  Cons  Acc%
+  -------------------------------------------------------------------------
+  out-of-plan               18   12     0      5    1    67%   67%   94%   67%
+
+Failure per layer (su 17 run valide):
+  L2 Execution:    2  (11.8%)
+  L3 Chaining:     0  (0.0%)
+  L4 Schema:       0  (0.0%)

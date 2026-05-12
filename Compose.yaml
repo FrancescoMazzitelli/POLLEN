@@ -1,0 +1,244 @@
+services:
+  registry:
+    image: hashicorp/consul:latest
+    restart: always
+    container_name: registry
+    command: agent -dev -client=0.0.0.0
+    ports:
+      - "${HOST_PORT_CONSUL:-8500}:8500"
+      - "${HOST_PORT_CONSUL_DNS:-8600}:8600/udp"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mock-server:
+    image: quay.io/microcks/microcks-uber:latest
+    container_name: mock-server
+    ports:
+      - "${HOST_PORT_MOCK_SERVER:-8585}:8080"
+    volumes:
+      - mock-volume:/data
+    environment:
+      - MICROCKS_CONSUL_URL=http://${REGISTRY_HOST:-registry}:${CONSUL_PORT:-8500}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      registry:
+        condition: service_healthy
+
+  mock-deployer:
+      image: quay.io/microcks/microcks-cli:latest
+      container_name: mock-deployer
+      depends_on:
+        yaml-preprocessor:
+          condition: service_completed_successfully
+        mock-server:
+          condition: service_healthy
+        catalog-gateway:
+          condition: service_healthy
+        api-importer:
+          condition: service_started
+      volumes:
+        - ./service-mocks/apis:/apis
+        - ./service-mocks/scripts:/scripts
+        - ./deploy.sh:/deploy.sh:ro
+        - ./register.sh:/register.sh:ro
+      entrypoint: sh
+      command:
+        - -c
+        - |
+          set -e
+          export PATH="/tmp:$$PATH"
+          echo "Downloading jq..."
+          curl -L -o /tmp/jq https://github.com/stedolan/jq/releases/latest/download/jq-linux64
+          chmod +x /tmp/jq
+          /deploy.sh
+          echo "Waiting 15 seconds before running register.sh..."
+          sleep 15
+          /register.sh
+          echo "Triggering API schema enrichment..."
+          until curl -s -f -X POST http://api-importer:7500/api/importer/enrich \
+              -H "Content-Type: application/json" \
+              -d '{"mock_server_url": "http://mock-server:8080"}'; do
+            echo "api-importer non ancora pronto, riprovo tra 3 secondi..."
+            sleep 3
+          done
+          echo -e "\nEnrichment triggered successfully!"
+      environment:
+        - MICROCKS_HOST=${MOCK_SERVER_HOST:-mock-server}
+        - MICROCKS_PORT=${MOCK_SERVER_PORT:-8080}
+        - MICROCKS_USER=${MICROCKS_USER:-admin}
+        - MICROCKS_PASS=${MICROCKS_PASS:-admin}
+      stop_grace_period: 10s
+
+  yaml-preprocessor:
+    image: python:3.11-alpine
+    container_name: yaml-preprocessor
+    volumes:
+      - ./service-mocks/apis:/apis
+      - ./service-mocks/scripts:/scripts:ro
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        pip install --no-cache-dir pyyaml
+        python /scripts/fix_yaml.py /apis
+
+  catalog-data:
+    image: mongo:8.0.6
+    container_name: catalog-data
+    ports:
+      - "${HOST_PORT_MONGO:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-admin}
+    restart: unless-stopped
+
+  catalog-vector:
+    image: qdrant/qdrant:dev
+    container_name: catalog-vector
+    ports:
+      - "${HOST_PORT_QDRANT_HTTP:-6333}:6333"
+      - "${HOST_PORT_QDRANT_GRPC:-6334}:6334"
+    volumes:
+      - qdrant-data:/data/vector
+    restart: unless-stopped
+
+  catalog-gui:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: catalog-gui
+    ports:
+      - "${HOST_PORT_MONGO_EXPRESS:-27018}:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-admin}@${MONGO_HOST:-catalog-data}:${MONGO_PORT:-27017}/
+      - ME_CONFIG_BASICAUTH_ENABLED=${ME_CONFIG_BASICAUTH_ENABLED:-true}
+      - ME_CONFIG_BASICAUTH_USERNAME=${ME_CONFIG_BASICAUTH_USERNAME:-admin}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${ME_CONFIG_BASICAUTH_PASSWORD:-admin}
+    depends_on:
+      - catalog-data
+    restart: unless-stopped
+
+  catalog-gateway:
+    build:
+      context: ./db-gateway
+      dockerfile: Dockerfile
+    container_name: catalog-gateway
+    ports:
+      - "${HOST_PORT_CATALOG_GATEWAY:-5000}:5000"
+    volumes:
+      - ./db-gateway:/app
+    environment:
+      - MONGO_USER=${MONGO_USER:-admin}
+      - MONGO_PASS=${MONGO_PASS:-admin}
+      - MONGO_HOST=${MONGO_HOST:-catalog-data}
+      - MONGO_PORT=${MONGO_PORT:-27017}
+      - MONGO_DB=${MONGO_DB:-microcks}
+      - QDRANT_HOST=${QDRANT_HOST:-catalog-vector}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
+      - QDRANT_COLLECTION=${QDRANT_COLLECTION:-services}
+      - OLLAMA_URL=${PETALS_ENDPOINT:-http://localhost:11434}
+      - DECOMPOSITION_MODEL=${DECOMPOSITION_MODEL:-qwen3.5:27b}
+      #- USE_LLM_DECOMPOSITION=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 40
+    stop_grace_period: 15s
+    depends_on:
+      - catalog-data
+      - catalog-vector
+
+  control-unit:
+    build:
+      context: ./control-unit
+      dockerfile: Dockerfile
+    container_name: control-unit
+    ports:
+      - "${HOST_PORT_CONTROL_UNIT:-5500}:5500"
+    volumes:
+      - ./control-unit:/app
+    environment:
+      - REGISTRY_URL=http://${REGISTRY_HOST:-registry}:${CONSUL_PORT:-8500}
+      - CATALOG_URL=http://${CATALOG_GATEWAY_HOST:-catalog-gateway}:${CATALOG_GATEWAY_PORT:-5000}
+      - OLLAMA_API_URL=${PETALS_ENDPOINT:-http://localhost:11434}
+      - LLM_MODEL=${LLM_MODEL:-qwen3.5:27b}
+      - MOCK_SERVER_URL=http://${MOCK_SERVER_HOST:-mock-server}:${MOCK_SERVER_PORT:-8080}
+      - BACKEND_MODE=${BACKEND_MODE:-MOCK}
+      - API_AUTH_HEADERS=${API_AUTH_HEADERS:-}
+    stop_grace_period: 10s
+    depends_on:
+      mock-deployer:
+        condition: service_completed_successfully
+      registry:
+        condition: service_healthy
+
+  healthcheck-catalog:
+    image: redis/redis-stack:7.2.0-v19
+    container_name: healthcheck-catalog
+    ports:
+      - "${HOST_PORT_REDIS:-6379}:6379"
+      - "${HOST_PORT_REDIS_INSIGHT:-6380}:8001"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  healthcheck-service:
+    build:
+      context: ./redis-connector-quarkus
+      dockerfile: Dockerfile
+    container_name: healthcheck-service
+    ports:
+      - "${HOST_PORT_HEALTHCHECK:-5600}:5600"
+    environment:
+      - REDIS_URL=redis://${HEALTHCHECK_CATALOG_HOST:-healthcheck-catalog}:${REDIS_PORT:-6379}
+    stop_grace_period: 10s
+    depends_on:
+      healthcheck-catalog:
+        condition: service_started
+      registry:
+        condition: service_healthy
+      mock-server:
+        condition: service_healthy
+      catalog-gateway:
+        condition: service_started
+
+  api-importer:
+    build:
+      context: ./api-importer
+      dockerfile: Dockerfile
+    container_name: api-importer
+    ports:
+      - "${HOST_PORT_API_IMPORTER:-7500}:7500"
+    volumes:
+      - ./api-importer:/app
+    environment:
+      - CONSUL_HOST=${CONSUL_HOST:-registry}
+      - CONSUL_PORT=${CONSUL_PORT:-8500}
+      - GATEWAY_HOST=${CATALOG_GATEWAY_HOST:-catalog-gateway}
+      - GATEWAY_PORT=${CATALOG_GATEWAY_PORT:-5000}
+      - HEALTHCHECK_SERVICE_HOST=${HEALTHCHECK_SERVICE_HOST:-healthcheck-service}
+      - HEALTHCHECK_SERVICE_PORT=${HEALTHCHECK_SERVICE_PORT:-5600}
+      - MOCK_SERVER_URL=http://${MOCK_SERVER_HOST:-mock-server}:${MOCK_SERVER_PORT:-8080}
+    stop_grace_period: 10s
+    depends_on:
+      registry:
+        condition: service_healthy
+      catalog-gateway:
+        condition: service_started
+      healthcheck-service:
+        condition: service_started
+
+volumes:
+  mongo-data:
+  qdrant-data:
+  mock-volume:
+  redis-data:

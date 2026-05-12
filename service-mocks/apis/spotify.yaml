@@ -1,0 +1,1162 @@
+openapi: "3.0.0"
+info:
+  title: Spotify
+  version: "1.0"
+  description: Spotify Web API mock for Microcks
+
+paths:
+  /search:
+    get:
+      operationId: search
+      summary: Search for tracks, artists, albums
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          example: Mariah Carey
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          example: track
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracks:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            artists:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: string
+                                  name:
+                                    type: string
+              example:
+                tracks:
+                  items:
+                    - id: "4iV5W9uYEdYUVa79Axb7Rh"
+                      name: "We Belong Together"
+                      artists:
+                        - id: "4gH7kN1gxpyG0TqR3KxI1h"
+                          name: "Mariah Carey"
+                    - id: "1x6FsdRG7kpYk5L4vrBz0g"
+                      name: "All I Want for Christmas Is You"
+                      artists:
+                        - id: "4gH7kN1gxpyG0TqR3KxI1h"
+                          name: "Mariah Carey"
+
+  /me:
+    get:
+      operationId: getMe
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  display_name:
+                    type: string
+                  email:
+                    type: string
+              example:
+                id: "31l2b3c4d5e6f7g8h9i0j"
+                display_name: "Test User"
+                email: "testuser@example.com"
+
+  /users/{user_id}/playlists:
+    post:
+      operationId: createPlaylist
+      summary: Create a playlist
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "31l2b3c4d5e6f7g8h9i0j"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                public:
+                  type: boolean
+            example:
+              name: "Love Mariah"
+              description: "A playlist dedicated to Mariah Carey"
+              public: true
+      responses:
+        "201":
+          description: Playlist created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  owner:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      display_name:
+                        type: string
+              example:
+                id: "3c4d5e6f7g8h9i0j1k2l"
+                name: "Love Mariah"
+                owner:
+                  id: "31l2b3c4d5e6f7g8h9i0j"
+                  display_name: "Test User"
+
+  /playlists/{playlist_id}/tracks:
+    post:
+      operationId: addTracksToPlaylist
+      summary: Add tracks to a playlist
+      parameters:
+        - name: playlist_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "3c4d5e6f7g8h9i0j1k2l"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uris:
+                  type: array
+                  items:
+                    type: string
+                position:
+                  type: integer
+            example:
+              uris:
+                - "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"
+              position: 0
+      responses:
+        "201":
+          description: Tracks added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  snapshot_id:
+                    type: string
+              example:
+                snapshot_id: "MSw0YzVkZTZmN2c4aDlpMGoxazJs"
+
+    delete:
+      operationId: removeTracksFromPlaylist
+      summary: Remove tracks from a playlist
+      parameters:
+        - name: playlist_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "3c4d5e6f7g8h9i0j1k2l"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tracks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      uri:
+                        type: string
+            example:
+              tracks:
+                - uri: "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"
+      responses:
+        "200":
+          description: Tracks removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  snapshot_id:
+                    type: string
+              example:
+                snapshot_id: "NSw0YzVkZTZmN2c4aDlpMGoxazJs"
+
+    get:
+      operationId: getPlaylistTracks
+      summary: Get playlist tracks
+      parameters:
+        - name: playlist_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "3c4d5e6f7g8h9i0j1k2l"
+      responses:
+        "200":
+          description: Playlist tracks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        track:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+              example:
+                items:
+                  - track:
+                      id: "4iV5W9uYEdYUVa79Axb7Rh"
+                      name: "We Belong Together"
+
+  /albums/{id}/tracks:
+    get:
+      operationId: getAlbumTracks
+      summary: Get album tracks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "4aawyAB9vmqN3uQ7FjRGTy"
+      responses:
+        "200":
+          description: Album tracks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        track_number:
+                          type: integer
+              example:
+                items:
+                  - id: "6hHcY0s4Vq0pXlJYg7eHjL"
+                    name: "Speak to Me"
+                    track_number: 1
+                  - id: "7kKj5XxY7pYlJYg7eHjLmN"
+                    name: "Breathe"
+                    track_number: 2
+
+  /me/player/queue:
+    post:
+      operationId: addToQueue
+      summary: Add item to playback queue
+      parameters:
+        - name: uri
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "spotify:track:6hHcY0s4Vq0pXlJYg7eHjL"
+      responses:
+        "204":
+          description: Item added to queue
+    get:
+      operationId: getQueue
+      summary: Get playback queue
+      responses:
+        "200":
+          description: Current queue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  queue:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                queue:
+                  - id: "6hHcY0s4Vq0pXlJYg7eHjL"
+                    name: "Summertime Sadness"
+
+  /me/playlists:
+    get:
+      operationId: getMyPlaylists
+      summary: Get current user playlists
+      responses:
+        "200":
+          description: User playlists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        public:
+                          type: boolean
+              example:
+                items:
+                  - id: "3c4d5e6f7g8h9i0j1k2l"
+                    name: "My Rock"
+                    public: true
+                  - id: "4d5e6f7g8h9i0j1k2l3m"
+                    name: "My R&B"
+                    public: false
+
+  /me/player/next:
+    post:
+      operationId: skipToNext
+      summary: Skip to next track
+      responses:
+        "204":
+          description: Skipped to next track
+
+  /me/player/volume:
+    put:
+      operationId: setVolume
+      summary: Set playback volume
+      parameters:
+        - name: volume_percent
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 60
+      responses:
+        "204":
+          description: Volume set
+
+  /me/player/currently-playing:
+    get:
+      operationId: getCurrentlyPlaying
+      summary: Get currently playing track
+      responses:
+        "200":
+          description: Currently playing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_playing:
+                    type: boolean
+                  item:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      artists:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                      album:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+              example:
+                is_playing: true
+                item:
+                  id: "6hHcY0s4Vq0pXlJYg7eHjL"
+                  name: "Summertime Sadness"
+                  artists:
+                    - id: "5f4g5h6i7j8k9l0m1n2o"
+                      name: "Lana Del Rey"
+                  album:
+                    id: "4aawyAB9vmqN3uQ7FjRGTy"
+                    name: "Born to Die"
+
+  /me/tracks:
+    put:
+      operationId: saveTracks
+      summary: Save tracks for current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              ids:
+                - "4iV5W9uYEdYUVa79Axb7Rh"
+      responses:
+        "200":
+          description: Tracks saved
+
+    get:
+      operationId: getMyTracks
+      summary: Get user saved tracks
+      responses:
+        "200":
+          description: Saved tracks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        track:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+              example:
+                items:
+                  - track:
+                      id: "4iV5W9uYEdYUVa79Axb7Rh"
+                      name: "We Belong Together"
+                  - track:
+                      id: "6hHcY0s4Vq0pXlJYg7eHjL"
+                      name: "Summertime Sadness"
+
+    delete:
+      operationId: removeTracks
+      summary: Remove user saved tracks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              ids:
+                - "4iV5W9uYEdYUVa79Axb7Rh"
+      responses:
+        "200":
+          description: Tracks removed
+
+  /me/following:
+    get:
+      operationId: getFollowing
+      summary: Get artists/users followed
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          example: artist
+      responses:
+        "200":
+          description: Followed artists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artists:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+              example:
+                artists:
+                  items:
+                    - id: "5f4g5h6i7j8k9l0m1n2o"
+                      name: "Taylor Swift"
+                    - id: "4gH7kN1gxpyG0TqR3KxI1h"
+                      name: "Mariah Carey"
+
+    put:
+      operationId: followArtists
+      summary: Follow artists or users
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          example: artist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              ids:
+                - "5f4g5h6i7j8k9l0m1n2o"
+      responses:
+        "204":
+          description: Followed
+
+    delete:
+      operationId: unfollowArtists
+      summary: Unfollow artists or users
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          example: artist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              ids:
+                - "5f4g5h6i7j8k9l0m1n2o"
+      responses:
+        "204":
+          description: Unfollowed
+
+  /artists/{id}/albums:
+    get:
+      operationId: getArtistAlbums
+      summary: Get artist albums
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "5f4g5h6i7j8k9l0m1n2o"
+      responses:
+        "200":
+          description: Artist albums
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        release_date:
+                          type: string
+              example:
+                items:
+                  - id: "4aawyAB9vmqN3uQ7FjRGTy"
+                    name: "The Dark Side of the Moon"
+                    release_date: "1973-03-01"
+                  - id: "5bBzY9vmqN3uQ7FjRGTyZx"
+                    name: "The Wall"
+                    release_date: "1979-11-30"
+
+  /tracks/{id}:
+    get:
+      operationId: getTrack
+      summary: Get track information
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6hHcY0s4Vq0pXlJYg7eHjL"
+      responses:
+        "200":
+          description: Track info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  artists:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                  album:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+              example:
+                id: "6hHcY0s4Vq0pXlJYg7eHjL"
+                name: "Summertime Sadness"
+                artists:
+                  - id: "5f4g5h6i7j8k9l0m1n2o"
+                    name: "Lana Del Rey"
+                album:
+                  id: "4aawyAB9vmqN3uQ7FjRGTy"
+                  name: "Born to Die"
+
+  /track/{id}:
+    get:
+      operationId: getTrackById
+      summary: Get a track by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "7kKj5XxY7pYlJYg7eHjLmN"
+      responses:
+        "200":
+          description: Track info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  artists:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                id: "7kKj5XxY7pYlJYg7eHjLmN"
+                name: "When You Believe"
+                artists:
+                  - id: "4gH7kN1gxpyG0TqR3KxI1h"
+                    name: "Mariah Carey"
+                  - id: "7n2wHs1TKA6G6SjzZsVf1h"
+                    name: "Whitney Houston"
+
+  /me/player/play:
+    put:
+      operationId: resumePlayback
+      summary: Start/resume playback
+      parameters:
+        - name: device_id
+          in: query
+          schema:
+            type: string
+          example: "abc123"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                context_uri:
+                  type: string
+                uris:
+                  type: array
+                  items:
+                    type: string
+            example:
+              context_uri: "spotify:album:4aawyAB9vmqN3uQ7FjRGTy"
+      responses:
+        "204":
+          description: Playback started
+
+  /me/player/repeat:
+    put:
+      operationId: setRepeatMode
+      summary: Set repeat mode
+      parameters:
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          example: track
+      responses:
+        "204":
+          description: Repeat mode set
+
+  /me/albums:
+    put:
+      operationId: saveAlbums
+      summary: Save albums for current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              ids:
+                - "4aawyAB9vmqN3uQ7FjRGTy"
+      responses:
+        "200":
+          description: Albums saved
+
+    get:
+      operationId: getMyAlbums
+      summary: Get user saved albums
+      responses:
+        "200":
+          description: Saved albums
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        album:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+              example:
+                items:
+                  - album:
+                      id: "4aawyAB9vmqN3uQ7FjRGTy"
+                      name: "Mojito"
+
+    delete:
+      operationId: removeAlbums
+      summary: Remove user saved albums
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              ids:
+                - "4aawyAB9vmqN3uQ7FjRGTy"
+      responses:
+        "200":
+          description: Albums removed
+
+  /playlists/{playlist_id}:
+    put:
+      operationId: updatePlaylist
+      summary: Update playlist details
+      parameters:
+        - name: playlist_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "3c4d5e6f7g8h9i0j1k2l"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                public:
+                  type: boolean
+            example:
+              name: "My First"
+              description: "Updated playlist"
+              public: false
+      responses:
+        "200":
+          description: Playlist updated
+
+    get:
+      operationId: getPlaylist
+      summary: Get playlist details
+      parameters:
+        - name: playlist_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "3c4d5e6f7g8h9i0j1k2l"
+      responses:
+        "200":
+          description: Playlist details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  owner:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      display_name:
+                        type: string
+              example:
+                id: "3c4d5e6f7g8h9i0j1k2l"
+                name: "My Rock"
+                description: "My rock playlist"
+                owner:
+                  id: "31l2b3c4d5e6f7g8h9i0j"
+                  display_name: "Test User"
+
+  /me/player/pause:
+    put:
+      operationId: pausePlayback
+      summary: Pause playback
+      responses:
+        "204":
+          description: Playback paused
+
+  /artists/{id}/top-tracks:
+    get:
+      operationId: getArtistTopTracks
+      summary: Get artist top tracks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "5f4g5h6i7j8k9l0m1n2o"
+      responses:
+        "200":
+          description: Top tracks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                tracks:
+                  - id: "6hHcY0s4Vq0pXlJYg7eHjL"
+                    name: "Shake It Off"
+
+  /me/top/{type}:
+    get:
+      operationId: getMyTopItems
+      summary: Get current user top items
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+          example: artists
+      responses:
+        "200":
+          description: Top items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                items:
+                  - id: "5f4g5h6i7j8k9l0m1n2o"
+                    name: "Taylor Swift"
+
+  /artists/{id}:
+    get:
+      operationId: getArtist
+      summary: Get artist details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "5f4g5h6i7j8k9l0m1n2o"
+      responses:
+        "200":
+          description: Artist details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  genres:
+                    type: array
+                    items:
+                      type: string
+              example:
+                id: "5f4g5h6i7j8k9l0m1n2o"
+                name: "Taylor Swift"
+                genres:
+                  - "pop"
+                  - "country"
+
+  /me/player:
+    get:
+      operationId: getPlayer
+      summary: Get playback state
+      responses:
+        "200":
+          description: Playback state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_playing:
+                    type: boolean
+                  device:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+              example:
+                is_playing: true
+                device:
+                  id: "abc123"
+                  name: "My PC"
+
+  /me/player/devices:
+    get:
+      operationId: getDevices
+      summary: Get available devices
+      responses:
+        "200":
+          description: Available devices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                devices:
+                  - id: "abc123"
+                    name: "My PC"
+                  - id: "def456"
+                    name: "My Phone"
+
+  /artists/{id}/related-artists:
+    get:
+      operationId: getRelatedArtists
+      summary: Get artist related artists
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "5f4g5h6i7j8k9l0m1n2o"
+      responses:
+        "200":
+          description: Related artists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artists:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                artists:
+                  - id: "6hIj8k9l0m1n2o3p4q5r"
+                    name: "Selena Gomez"
+
+  /albums/{id}:
+    get:
+      operationId: getAlbum
+      summary: Get album details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "4aawyAB9vmqN3uQ7FjRGTy"
+      responses:
+        "200":
+          description: Album details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  artists:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+              example:
+                id: "4aawyAB9vmqN3uQ7FjRGTy"
+                name: "Mojito"
+                artists:
+                  - id: "7j8k9l0m1n2o3p4q5r6s"
+                    name: "Jay Chou"

@@ -1,0 +1,241 @@
+--- Query #1 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Where can I borrow a Roman history novel at the city library?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 80.46s
+
+--- Query #2 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Which pharmacies are open right now near the historic centre?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 86.24s
+
+--- Query #3 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Find me a hotel room under 100 euro for tonight
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 81.27s
+
+--- Query #4 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Where can I get a pizza near the Arco di Traiano right now?
+Oracle: []
+Aggregato: ERROR  Pass@1=False  Pass@K=False  Consistency=0%
+
+  Run ?:
+    NETWORK ERROR: Timeout dopo 90s
+
+--- Query #5 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Is there any live music concert tonight in Benevento?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 84.81s
+
+--- Query #6 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Will it rain tomorrow morning in the city?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 80.00s
+
+--- Query #7 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Is there a water supply outage in zone Z-CENTRO?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 79.76s
+
+--- Query #8 [out-of-plan] [out-of-domain] 🔍OOP ---
+Q: Where is the closest ATM to the train station?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 79.96s
+
+--- Query #9 [out-of-plan] [ambiguous] 🔍OOP ---
+Q: Show me something interesting
+Oracle: []
+Aggregato: INCORRECT  Pass@1=False  Pass@K=False  Consistency=100%
+
+  Run 1:
+    Final: INCORRECT  TP=0 FP=0 FN=1 F1=0.000
+    L1_plan: FAIL
+      - expected tasks=[], got len=1
+      - expected empty_plan_category='AMBIGUOUS', got=''
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 52.59s
+
+--- Query #10 [out-of-plan] [ambiguous] 🔍OOP ---
+Q: Help me with the city
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 67.80s
+
+--- Query #11 [out-of-plan] [ambiguous] 🔍OOP ---
+Q: What can you do?
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 72.12s
+
+--- Query #12 [out-of-plan] [ambiguous] 🔍OOP ---
+Q: Tell me what is happening
+Oracle: []
+Aggregato: INCORRECT  Pass@1=False  Pass@K=False  Consistency=100%
+
+  Run 1:
+    Final: INCORRECT  TP=0 FP=0 FN=1 F1=0.000
+    L1_plan: FAIL
+      - expected tasks=[], got len=3
+      - expected empty_plan_category='AMBIGUOUS', got=''
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 62.67s
+
+--- Query #13 [out-of-plan] [invalid] 🔍OOP ---
+Q: List all rubbish bins in zone Z-MARTE
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 71.25s
+
+--- Query #14 [out-of-plan] [invalid] 🔍OOP ---
+Q: Show me radiation sensors that have an alert active
+Oracle: []
+Aggregato: INCORRECT  Pass@1=False  Pass@K=False  Consistency=100%
+
+  Run 1:
+    Final: INCORRECT  TP=0 FP=0 FN=1 F1=0.000
+    L1_plan: FAIL
+      - expected empty_plan_category='INVALID', got='OUT_OF_DOMAIN'
+    L2_execution: FAIL
+      - expected INVALID → nessun contract atteso, got 1
+      - expected INVALID → nessun contract atteso, got 1
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 84.43s
+
+--- Query #15 [out-of-plan] [invalid] 🔍OOP ---
+Q: Find helicopter public transport vehicles that are running late
+Oracle: []
+Aggregato: INCORRECT  Pass@1=False  Pass@K=False  Consistency=100%
+
+  Run 1:
+    Final: INCORRECT  TP=0 FP=0 FN=1 F1=0.000
+    L1_plan: FAIL
+      - expected empty_plan_category='INVALID', got='OUT_OF_DOMAIN'
+    L2_execution: FAIL
+      - expected INVALID → nessun contract atteso, got 1
+      - expected INVALID → nessun contract atteso, got 1
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 87.43s
+
+--- Query #16 [out-of-plan] [invalid] 🔍OOP ---
+Q: Show emergency units that are both idle and responding at the same time
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 69.97s
+
+--- Query #17 [out-of-plan] [invalid] 🔍OOP ---
+Q: List bins that are 0% full and overflowing simultaneously
+Oracle: []
+Aggregato: INCORRECT  Pass@1=False  Pass@K=False  Consistency=100%
+
+  Run 1:
+    Final: INCORRECT  TP=0 FP=0 FN=1 F1=0.000
+    L1_plan: FAIL
+      - expected tasks=[], got len=2
+      - expected empty_plan_category='INVALID', got=''
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 63.26s
+
+--- Query #18 [out-of-plan] [invalid] 🔍OOP ---
+Q: Show parking spots with spotType 'underwater'
+Oracle: []
+Aggregato: CORRECT  Pass@1=True  Pass@K=True  Consistency=100%
+
+  Run 1:
+    Final: CORRECT  TP=1 FP=0 FN=0 F1=1.000
+    L1_plan: PASS
+    L2_execution: PASS
+    L3_chaining: SKIP
+    L4_schema: SKIP
+    Latency: 70.33s
+

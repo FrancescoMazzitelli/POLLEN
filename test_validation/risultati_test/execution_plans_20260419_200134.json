@@ -1,0 +1,895 @@
+[
+  {
+    "question_index": 1,
+    "run": 1,
+    "question": "Are there any rubbish bins in the city that urgently need to be emptied?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find bins with urgent need to be emptied (status=overflowing) | MAP: smart-bins-mock / GET /bin | CHAIN: none | COMBINE: single task | FILTER: status=overflowing (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-bins-mock",
+          "task_name": "get_overflowing_bins",
+          "url": "http://mock-server:8080/rest/Smart+Bins+API/1.0/bin?status=overflowing"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 2,
+    "run": 1,
+    "question": "What tourist spots can I visit in the city today?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: list of tourist attractions open today | MAP: smart-tourist-attractions-mock / GET /attraction | CHAIN: none | COMBINE: single task | FILTER: status=open (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_open_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 3,
+    "run": 1,
+    "question": "I have an electric car. Where can I charge it right now?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find available EV charging stations | MAP: smart-charging-stations-mock / GET /charging-station | CHAIN: none | COMBINE: single task | FILTER: available=true (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-charging-stations-mock",
+          "task_name": "get_available_charging_stations",
+          "url": "http://mock-server:8080/rest/Smart+Charging+Stations+API/1.0/charging-station?available=true"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 4,
+    "run": 1,
+    "question": "Are there any street lights in the city that are currently switched off or not working?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find lights with status 'off' and status 'malfunctioning' | MAP: smart-lighting-mock / GET /light | CHAIN: none | COMBINE: sql set_union get_lights_off and get_lights_malfunctioning | FILTER: status=off for first task, status=malfunctioning for second task (catalog enums) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-lighting-mock",
+          "task_name": "get_lights_off",
+          "url": "http://mock-server:8080/rest/Smart+Lighting+and+Energy+API/1.0/light?status=off"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-lighting-mock",
+          "task_name": "get_lights_malfunctioning",
+          "url": "http://mock-server:8080/rest/Smart+Lighting+and+Energy+API/1.0/light?status=malfunctioning"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT * FROM get_lights_off UNION SELECT * FROM get_lights_malfunctioning"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "combine_off_and_malfunctioning",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 5,
+    "run": 1,
+    "question": "Which emergency vehicles are currently available to respond?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: list of emergency units with available=true | MAP: smart-emergency-services-mock / GET /emergency-unit | CHAIN: none | COMBINE: single task | FILTER: available=true (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-emergency-services-mock",
+          "task_name": "get_available_emergency_units",
+          "url": "http://mock-server:8080/rest/Smart+Emergency+Services+API/1.0/emergency-unit?available=true"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 6,
+    "run": 1,
+    "question": "Are any public buses running late right now?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find public transport vehicles with status delayed and type bus | MAP: smart-public-transport-mock / GET /vehicle | CHAIN: none | COMBINE: single task | FILTER: status=delayed (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-public-transport-mock",
+          "task_name": "get_delayed_vehicles",
+          "url": "http://mock-server:8080/rest/Smart+Public+Transport+and+Transit+API/1.0/vehicle?status=delayed"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 7,
+    "run": 1,
+    "question": "Is the air quality around the city acceptable right now?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve all air quality sensors across the city to assess current readings | MAP: smart-environment-and-temperature-sensors-mock / GET /sensor with sensorType=air_quality | CHAIN: none | COMBINE: sql aggregate/rank over get_air_quality_sensors to determine if readings are acceptable (e.g., check for alerts or high values) | FILTER: sensorType=air_quality | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_air_quality_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT zoneId, location, lastReading, alertActive, alertReason FROM get_air_quality_sensors WHERE alertActive = true OR lastReading > 100 ORDER BY lastReading DESC"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "assess_air_quality",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 8,
+    "run": 1,
+    "question": "Where can I park my car in the city right now?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find parking spots that are currently free | MAP: smart-parking-mock / GET /parking-spot | CHAIN: none | COMBINE: single task | FILTER: status=free (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "get_free_parking_spots",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?status=free"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 9,
+    "run": 1,
+    "question": "Is the city centre busy with traffic right now?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: check traffic congestion in city centre (Z-CENTRO) | MAP: smart-traffic-monitoring-mock / GET /traffic-sensor | CHAIN: none | COMBINE: single task | FILTER: zoneId=Z-CENTRO | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_traffic_in_centro",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?zoneId=Z-CENTRO"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 10,
+    "run": 1,
+    "question": "I use a wheelchair. Which attractions in the city are accessible to me today?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find wheelchair-accessible attractions | MAP: smart-tourist-attractions-mock / GET /attraction | CHAIN: none | COMBINE: single task | FILTER: wheelchairAccessible=true (catalog bool) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_accessible_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?wheelchairAccessible=true"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 11,
+    "run": 1,
+    "question": "I want to visit something interesting today. Is there somewhere I can also find parking nearby?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find open tourist attractions and free parking spots | MAP: smart-tourist-attractions-mock / GET /attraction (status=open) + smart-parking-mock / GET /parking-spot (status=free) | CHAIN: SQL join on zoneId | COMBINE: sql join get_open_attractions and get_free_parking | FILTER: status=open for attractions, status=free for parking | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_open_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "get_free_parking",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?status=free"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT a.id, a.name, a.category, a.zoneId, a.address, p.id as parking_id, p.location as parking_location FROM get_open_attractions a JOIN get_free_parking p ON a.zoneId = p.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "attractions_with_nearby_parking",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 12,
+    "run": 1,
+    "question": "I want to go for a run outside. Are there parts of the city with little traffic and clean air?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with low traffic and clean air | MAP: smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=low) + smart-environment-and-temperature-sensors-mock / GET /sensor (sensorType=air_quality, alertActive=false) | CHAIN: SQL join on zoneId | COMBINE: sql join get_low_traffic_zones and get_clean_air_zones | FILTER: traffic congestionLevel=low; air quality alertActive=false | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_low_traffic_zones",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=low"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_clean_air_zones",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality&alertActive=false"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT DISTINCT t.zoneId FROM get_low_traffic_zones t JOIN get_clean_air_zones a ON t.zoneId = a.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "find_suitable_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 13,
+    "run": 1,
+    "question": "I need to charge my electric car but I'd rather avoid congested streets. Where should I head?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find available charging stations, find congested zones, exclude stations in congested zones | MAP: smart-charging-stations-mock / GET /charging-station (available=true), smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=high or critical) | CHAIN: SQL set difference on zoneId | COMBINE: sql set_difference get_available_stations minus get_congested_zones | FILTER: available=true for stations; congestionLevel in (high, critical) for sensors | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-charging-stations-mock",
+          "task_name": "get_available_stations",
+          "url": "http://mock-server:8080/rest/Smart+Charging+Stations+API/1.0/charging-station?available=true"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_high_congestion_zones",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=high"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_critical_congestion_zones",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=critical"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT s.* FROM get_available_stations s WHERE s.zoneId NOT IN (SELECT zoneId FROM get_high_congestion_zones UNION SELECT zoneId FROM get_critical_congestion_zones)"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "stations_in_non_congested_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 14,
+    "run": 1,
+    "question": "I've heard some parts of the city have bad traffic right now. Are there tourist spots in a less congested area?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find tourist attractions in zones with low traffic congestion | MAP: smart-traffic-monitoring-mock / GET /traffic-sensor (filter congestionLevel=low) + smart-tourist-attractions-mock / GET /attraction (filter by zoneIds) | CHAIN: get_attractions?zoneIds ← get_low_congestion_sensors[*].zoneId | join(',',@) | COMBINE: chain: get_attractions_in_low_congestion_zones consumes get_low_congestion_sensors via JMESPath | FILTER: traffic-sensor congestionLevel=low; attraction zoneIds param | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_low_congestion_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=low"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_attractions_in_low_congestion_zones",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?zoneIds=Z-NORD,Z-EST"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 15,
+    "run": 1,
+    "question": "There seems to be a big traffic jam somewhere. Are emergency services available in that area?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with critical congestion, then find available emergency units in those zones | MAP: smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=critical) + smart-emergency-services-mock / GET /emergency-unit (available=true) | CHAIN: SQL join on zoneId | COMBINE: sql join get_critical_traffic and get_available_units | FILTER: congestionLevel=critical; available=true | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_critical_traffic",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=critical"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-emergency-services-mock",
+          "task_name": "get_available_units",
+          "url": "http://mock-server:8080/rest/Smart+Emergency+Services+API/1.0/emergency-unit?available=true"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT t.zoneId, t.location as traffic_location, u.type as unit_type, u.location as unit_location, u.status FROM get_critical_traffic t JOIN get_available_units u ON t.zoneId = u.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "check_emergency_availability",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 16,
+    "run": 1,
+    "question": "I want to spend the afternoon somewhere the air is clean. Is there anything worth visiting there?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with clean air (air_quality sensors with low readings) -> find attractions in those zones | MAP: smart-environment-and-temperature-sensors-mock / GET /sensor (filter by sensorType=air_quality) + smart-tourist-attractions-mock / GET /attraction | CHAIN: SQL join on zoneId | COMBINE: sql join get_air_sensors and get_attractions, order by lastReading ASC | FILTER: user asks for 'clean air' (qualitative). I MUST NOT invent a threshold. I will use ORDER BY lastReading ASC LIMIT 5 to find the cleanest zones and their attractions | VALIDATE: ✓ no invented thresholds, used sorting instead",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_air_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT a.id, a.name, a.category, a.zoneId, s.lastReading, s.location FROM get_attractions a JOIN get_air_sensors s ON a.zoneId = s.zoneId ORDER BY s.lastReading ASC LIMIT 5"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "clean_air_attractions",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 17,
+    "run": 1,
+    "question": "I'm a city worker doing rounds. Which areas have both overflowing bins and heavy traffic at the same time?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with overflowing bins AND heavy traffic | MAP: smart-bins-mock / GET /bin (status=overflowing) + smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=high) | CHAIN: SQL join on zoneId | COMBINE: sql join get_overflowing_bins and get_heavy_traffic | FILTER: status=overflowing for bins, congestionLevel=high for traffic | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-bins-mock",
+          "task_name": "get_overflowing_bins",
+          "url": "http://mock-server:8080/rest/Smart+Bins+API/1.0/bin?status=overflowing"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_heavy_traffic",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=high"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT DISTINCT b.zoneId FROM get_overflowing_bins b JOIN get_heavy_traffic t ON b.zoneId = t.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "areas_with_both_issues",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 18,
+    "run": 1,
+    "question": "I want to drive into the city without getting stuck in traffic. Where are there still free parking spots?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find free parking spots | MAP: smart-parking-mock / GET /parking-spot | CHAIN: none | COMBINE: single task | FILTER: status=free (catalog enum) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "get_free_parking_spots",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?status=free"
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 19,
+    "run": 1,
+    "question": "I've heard the air quality is bad in some parts of the city. Are there free parking spots somewhere the air is clean?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with clean air (air_quality sensors with low readings) AND find free parking spots in those zones | MAP: smart-environment-and-temperature-sensors-mock / GET /sensor (filter sensorType=air_quality) + smart-parking-mock / GET /parking-spot (filter status=free) | CHAIN: SQL join on zoneId | COMBINE: sql join get_clean_air_zones and get_free_parking_spots | FILTER: air_quality sensors sorted by lastReading ASC to identify 'clean' zones; parking spots with status=free | VALIDATE: ✓ no invented thresholds, used sorting for 'clean', joined results via SQL",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_air_quality_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "get_free_parking_spots",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?status=free"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT p.* FROM get_free_parking_spots p JOIN (SELECT zoneId FROM get_air_quality_sensors ORDER BY lastReading ASC LIMIT 3) clean ON p.zoneId = clean.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "parking_in_clean_air_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 20,
+    "run": 1,
+    "question": "The bus I take to work is running late. Is there a lot of traffic along its usual route?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: user asks about traffic along a bus route; need to find delayed buses and check for traffic incidents/congestion in the same zones | MAP: smart-public-transport-mock / GET /vehicle (status=delayed) + smart-traffic-monitoring-mock / GET /traffic-sensor (incidentDetected=true) | CHAIN: SQL join on zoneId to correlate delayed bus zones with traffic incidents | COMBINE: sql join get_delayed_buses and get_traffic_incidents | FILTER: status=delayed for vehicles; incidentDetected=true for sensors | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-public-transport-mock",
+          "task_name": "get_delayed_buses",
+          "url": "http://mock-server:8080/rest/Smart+Public+Transport+and+Transit+API/1.0/vehicle?status=delayed"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_traffic_incidents",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?incidentDetected=true"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT b.zoneId, b.routeId, b.vehicleType, b.status, t.location, t.congestionLevel, t.incidentDetected FROM get_delayed_buses b JOIN get_traffic_incidents t ON b.zoneId = t.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "correlate_traffic_and_buses",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 21,
+    "run": 1,
+    "question": "I want to take my kids somewhere nice today. Are there things to visit in an area where the air is clean?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find tourist attractions in zones with clean air | MAP: smart-environment-and-temperature-sensors-mock / GET /sensor (air_quality) + smart-tourist-attractions-mock / GET /attraction | CHAIN: SQL join on zoneId | COMBINE: sql join get_clean_air_zones and get_attractions, filter by low pollution | FILTER: air_quality sensors with low lastReading (clean air) -> SQL sort/limit; attractions in those zones | VALIDATE: ✓ no invented thresholds, used sorting for 'clean'",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_air_quality_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT a.* FROM get_attractions a JOIN (SELECT zoneId FROM get_air_quality_sensors ORDER BY lastReading ASC LIMIT 3) clean_zones ON a.zoneId = clean_zones.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "attractions_in_clean_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 22,
+    "run": 1,
+    "question": "Which parts of the city have both street lights switched off and bins that haven't been emptied?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with lights off AND bins not emptied | MAP: smart-lighting-mock / GET /light (status=off), smart-bins-mock / GET /bin (status=full or overflowing) | CHAIN: SQL join on zoneId | COMBINE: sql join get_lights_off and get_bins_not_emptied | FILTER: status=off for lights; status in (full, overflowing) for bins | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-lighting-mock",
+          "task_name": "get_lights_off",
+          "url": "http://mock-server:8080/rest/Smart+Lighting+and+Energy+API/1.0/light?status=off"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-bins-mock",
+          "task_name": "get_bins_full",
+          "url": "http://mock-server:8080/rest/Smart+Bins+API/1.0/bin?status=full"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-bins-mock",
+          "task_name": "get_bins_overflowing",
+          "url": "http://mock-server:8080/rest/Smart+Bins+API/1.0/bin?status=overflowing"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT DISTINCT l.zoneId FROM get_lights_off l JOIN (SELECT zoneId FROM get_bins_full UNION SELECT zoneId FROM get_bins_overflowing) b ON l.zoneId = b.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "find_zones_with_off_lights_and_full_bins",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 23,
+    "run": 1,
+    "question": "I'm nearly out of battery and I'd like to visit something. Is there a charger close to any open attraction?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find open attractions, find available chargers, match by zone | MAP: smart-tourist-attractions-mock / GET /attraction (status=open), smart-charging-stations-mock / GET /charging-station (available=true) | CHAIN: SQL join on zoneId | COMBINE: sql join get_open_attractions and get_available_chargers | FILTER: status=open for attractions, available=true for chargers | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_open_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-charging-stations-mock",
+          "task_name": "get_available_chargers",
+          "url": "http://mock-server:8080/rest/Smart+Charging+Stations+API/1.0/charging-station?available=true"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT a.id as attraction_id, a.name as attraction_name, a.zoneId, c.id as charger_id, c.location as charger_location FROM get_open_attractions a JOIN get_available_chargers c ON a.zoneId = c.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "match_chargers_to_attractions",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 24,
+    "run": 1,
+    "question": "Are there buildings in parts of the city where the environment seems unhealthy right now?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find buildings in zones with unhealthy environment (high pollution or active alerts) | MAP: smart-environment-and-temperature-sensors-mock / GET /sensor (filter alertActive=true) + smart-buildings-mock / GET /building | CHAIN: SQL join on zoneId | COMBINE: sql join get_buildings and get_unhealthy_sensors | FILTER: sensor alertActive=true (catalog bool) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_unhealthy_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?alertActive=true"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-buildings-mock",
+          "task_name": "get_buildings",
+          "url": "http://mock-server:8080/rest/Smart+Buildings+API/1.0/building"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT DISTINCT b.* FROM get_buildings b JOIN get_unhealthy_sensors s ON b.zoneId = s.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "buildings_in_unhealthy_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 25,
+    "run": 1,
+    "question": "I want to spend a nice afternoon out. Where in the city has clean air, something interesting to see, and parking available?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with clean air (air_quality sensors with low readings), open tourist attractions, and available parking spots | MAP: smart-environment-and-temperature-sensors-mock / GET /sensor (filter sensorType=air_quality), smart-tourist-attractions-mock / GET /attraction (filter status=open), smart-parking-mock / GET /parking-spot (filter available=true) | CHAIN: SQL join over three datasets on zoneId | COMBINE: sql join task_get_air_sensors, task_get_attractions, task_get_parking | FILTER: air_quality sensors (no threshold invented, use min reading via SQL), status=open for attractions, available=true for parking | VALIDATE: ✓ no invented thresholds, used SQL aggregation/ranking for 'cleanest'",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "task_get_air_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "task_get_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "task_get_parking",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?available=true"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT a.zoneId, MIN(s.lastReading) as min_air_reading, COUNT(DISTINCT att.id) as attraction_count, COUNT(DISTINCT p.id) as parking_count FROM task_get_air_sensors s JOIN task_get_attractions att ON s.zoneId = att.zoneId JOIN task_get_parking p ON s.zoneId = p.zoneId GROUP BY a.zoneId ORDER BY min_air_reading ASC LIMIT 5"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "task_find_best_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 26,
+    "run": 1,
+    "question": "I'm driving in for a bit of sightseeing. Where should I go to avoid heavy traffic, find something to visit, and park easily?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with low traffic congestion, find open tourist attractions, find available parking spots | MAP: smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=low), smart-tourist-attractions-mock / GET /attraction (status=open), smart-parking-mock / GET /parking-spot (status=free) | CHAIN: SQL join over three datasets on zoneId | COMBINE: sql join get_low_traffic_zones, get_open_attractions, get_free_parking | FILTER: congestionLevel=low, status=open, status=free | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_low_traffic_zones",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=low"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_open_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "get_free_parking",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?status=free"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT DISTINCT t.zoneId, a.name AS attraction_name, a.category, p.location AS parking_location FROM get_low_traffic_zones t JOIN get_open_attractions a ON t.zoneId = a.zoneId JOIN get_free_parking p ON t.zoneId = p.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "find_sightseeing_spots",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 27,
+    "run": 1,
+    "question": "I'm in a wheelchair and want to go out today. I need somewhere accessible, with decent air quality and a parking spot.",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: wheelchair-accessible attractions, air quality sensors, parking spots | MAP: smart-tourist-attractions-mock / GET /attraction (wheelchairAccessible=true), smart-environment-and-temperature-sensors-mock / GET /sensor (sensorType=air_quality), smart-parking-mock / GET /parking-spot (available=true) | CHAIN: none | COMBINE: sql join task_attractions and task_sensors and task_parking_spots on zoneId | FILTER: wheelchairAccessible=true, sensorType=air_quality, available=true | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "get_accessible_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?wheelchairAccessible=true"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "get_air_quality_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=air_quality"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "get_available_parking",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?available=true"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT a.id as attraction_id, a.name, a.zoneId, a.address, s.lastReading as air_quality_reading, p.id as parking_id, p.location as parking_location FROM get_accessible_attractions a JOIN get_air_quality_sensors s ON a.zoneId = s.zoneId JOIN get_available_parking p ON a.zoneId = p.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "find_suitable_locations",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 28,
+    "run": 1,
+    "question": "Which parts of the city are in the worst shape right now, with street lights off, full bins, and traffic problems all at once?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with lights off, bins full, and traffic problems (critical congestion or incidents) | MAP: smart-lighting-mock / GET /light (status=off), smart-bins-mock / GET /bin (status=full), smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=critical OR incidentDetected=true) | CHAIN: SQL join/intersect on zoneId | COMBINE: sql set_intersection over get_off_lights, get_full_bins, get_traffic_issues | FILTER: status=off, status=full, congestionLevel=critical, incidentDetected=true | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-lighting-mock",
+          "task_name": "get_off_lights",
+          "url": "http://mock-server:8080/rest/Smart+Lighting+and+Energy+API/1.0/light?status=off"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-bins-mock",
+          "task_name": "get_full_bins",
+          "url": "http://mock-server:8080/rest/Smart+Bins+API/1.0/bin?status=full"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_traffic_issues",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=critical"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "get_traffic_incidents",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?incidentDetected=true"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT l.zoneId FROM get_off_lights l INNER JOIN get_full_bins b ON l.zoneId = b.zoneId INNER JOIN (SELECT zoneId FROM get_traffic_issues UNION SELECT zoneId FROM get_traffic_incidents) t ON l.zoneId = t.zoneId"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "worst_zones",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 29,
+    "run": 1,
+    "question": "The city feels chaotic today. Where is there heavy congestion, delayed public transport, and few emergency units available?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find zones with heavy congestion, delayed transport, and low emergency unit availability | MAP: smart-traffic-monitoring-mock / GET /traffic-sensor (congestionLevel=critical), smart-public-transport-mock / GET /vehicle (status=delayed), smart-emergency-services-mock / GET /emergency-unit (available=false) | CHAIN: SQL join/aggregate over three GET results | COMBINE: sql join task_traffic_sensors, task_delayed_vehicles, task_unavailable_units to find common zones and rank by severity | FILTER: congestionLevel=critical, status=delayed, available=false | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-traffic-monitoring-mock",
+          "task_name": "task_traffic_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Traffic+and+Road+Monitoring+API/1.0/traffic-sensor?congestionLevel=critical"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-public-transport-mock",
+          "task_name": "task_delayed_vehicles",
+          "url": "http://mock-server:8080/rest/Smart+Public+Transport+and+Transit+API/1.0/vehicle?status=delayed"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-emergency-services-mock",
+          "task_name": "task_unavailable_units",
+          "url": "http://mock-server:8080/rest/Smart+Emergency+Services+API/1.0/emergency-unit?available=false"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT t.zoneId, COUNT(DISTINCT t.id) as congestion_count, COUNT(DISTINCT v.id) as delayed_count, COUNT(DISTINCT u.id) as unavailable_count FROM task_traffic_sensors t JOIN task_delayed_vehicles v ON t.zoneId = v.zoneId JOIN task_unavailable_units u ON t.zoneId = u.zoneId GROUP BY t.zoneId ORDER BY congestion_count DESC, delayed_count DESC, unavailable_count DESC"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "chaotic_zones_analysis",
+          "url": ""
+        }
+      ]
+    }
+  },
+  {
+    "question_index": 30,
+    "run": 1,
+    "question": "I want somewhere calm to go, with something to do and a place to park. What would you suggest?",
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find quiet zones (low noise), find open attractions in those zones, find free parking in those zones | MAP: smart-environment-and-temperature-sensors-mock (noise sensors), smart-tourist-attractions-mock (attractions), smart-parking-mock (parking) | CHAIN: SQL join over three datasets | COMBINE: sql join task_get_noise_sensors, task_get_attractions, task_get_parking | FILTER: noise sensors (sensorType=noise), attractions (status=open), parking (status=free) | VALIDATE: ✓",
+      "tasks": [
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-environment-and-temperature-sensors-mock",
+          "task_name": "task_get_noise_sensors",
+          "url": "http://mock-server:8080/rest/Smart+Environment+and+Temperature+Sensors+API/1.0/sensor?sensorType=noise"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-tourist-attractions-mock",
+          "task_name": "task_get_attractions",
+          "url": "http://mock-server:8080/rest/Smart+Tourist+Attractions+API/1.0/attraction?status=open"
+        },
+        {
+          "input": "",
+          "operation": "GET",
+          "service_id": "smart-parking-mock",
+          "task_name": "task_get_parking",
+          "url": "http://mock-server:8080/rest/Smart+Parking+and+Mobility+API/1.0/parking-spot?status=free"
+        },
+        {
+          "input": {
+            "sql_query": "SELECT n.zoneId, n.lastReading AS noiseLevel, a.name AS attractionName, a.category AS attractionCategory, p.location AS parkingLocation FROM task_get_noise_sensors n JOIN task_get_attractions a ON n.zoneId = a.zoneId JOIN task_get_parking p ON n.zoneId = p.zoneId ORDER BY n.lastReading ASC LIMIT 5"
+          },
+          "operation": "SQL",
+          "service_id": "sql-processor",
+          "task_name": "task_suggest_calm_spots",
+          "url": ""
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,51 @@
+services:
+  petals-inference:
+    build:
+      context: ./petals-inference
+      dockerfile: Dockerfile
+    container_name: petals-inference
+    ports:
+      - "${HOST_PORT_INFERENCE:-31337}:31337"
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - MODEL_NAME=${PETALS_MODEL:-Qwen/Qwen2.5-7B-Instruct}
+      - INITIAL_PEERS=${INITIAL_PEERS:-}
+    command:
+      - sh
+      - -c
+      - |
+        if [ -z "$$INITIAL_PEERS" ]; then
+          echo "No INITIAL_PEERS set — running standalone (single-node)."
+          exec python -m petals.cli.run_server \
+            --model "$$MODEL_NAME" \
+            --inference_api http://0.0.0.0:31337 \
+            --num_blocks all \
+            --no_announce
+        else
+          exec python -m petals.cli.run_server \
+            --model "$$MODEL_NAME" \
+            --inference_api http://0.0.0.0:31337 \
+            --initial_peers $$INITIAL_PEERS
+        fi
+    stop_grace_period: 30s
+
+  petals-proxy:
+    build:
+      context: ./petals-proxy
+      dockerfile: Dockerfile
+    container_name: petals-proxy
+    ports:
+      - "${HOST_PORT_PROXY:-11434}:11434"
+    environment:
+      - PETALS_API_URL=http://petals-inference:31337
+      - PETALS_MODEL=${PETALS_MODEL:-Qwen/Qwen2.5-7B-Instruct}
+      - PROXY_MAX_RETRIES=${PROXY_MAX_RETRIES:-3}
+      - PROXY_TIMEOUT=${PROXY_TIMEOUT:-180}
+    depends_on:
+      petals-inference:
+        condition: service_started
+
+volumes:
+  huggingface-cache:
