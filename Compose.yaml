@@ -57,10 +57,10 @@ services:
           echo "Downloading jq..."
           curl -L -o /tmp/jq https://github.com/stedolan/jq/releases/latest/download/jq-linux64
           chmod +x /tmp/jq
-          /deploy.sh
+          sh /deploy.sh
           echo "Waiting 15 seconds before running register.sh..."
           sleep 15
-          /register.sh
+          sh /register.sh
           echo "Triggering API schema enrichment..."
           until curl -s -f -X POST http://api-importer:7500/api/importer/enrich \
               -H "Content-Type: application/json" \
@@ -135,6 +135,8 @@ services:
       - "${HOST_PORT_CATALOG_GATEWAY:-5000}:5000"
     volumes:
       - ./db-gateway:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - MONGO_USER=${MONGO_USER:-admin}
       - MONGO_PASS=${MONGO_PASS:-admin}
@@ -166,6 +168,8 @@ services:
       - "${HOST_PORT_CONTROL_UNIT:-5500}:5500"
     volumes:
       - ./control-unit:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - REGISTRY_URL=http://${REGISTRY_HOST:-registry}:${CONSUL_PORT:-8500}
       - CATALOG_URL=http://${CATALOG_GATEWAY_HOST:-catalog-gateway}:${CATALOG_GATEWAY_PORT:-5000}

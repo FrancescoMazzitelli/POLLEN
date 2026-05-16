@@ -10,6 +10,13 @@ The system is composed of 15+ Docker services orchestrated via Docker Compose, d
 - **Business Logic Layer**: Control Unit (planner/executor), API Importer, Catalog Gateway (semantic search), Healthcheck Service
 - **Infrastructure Layer**: Consul (service discovery), Microcks (mock API server), Petals (distributed LLM inference)
 
+## Getting Started
+
+To automatically deploy and configure all the needed services you can just run:
+```bash
+sudo docker compose -f Compose.yaml -f docker-compose.pi.yml up -d
+```
+Keep in mind that you first need to configure your .env file
 ---
 
 ## 1. Control Unit (`control-unit/`)

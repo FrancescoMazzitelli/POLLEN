@@ -11,23 +11,47 @@ services:
     environment:
       - HF_TOKEN=${HF_TOKEN:-}
       - MODEL_NAME=${PETALS_MODEL:-Qwen/Qwen2.5-7B-Instruct}
+      - QUANT_TYPE=${QUANT_TYPE:-int8}
+      - DEVICE=${DEVICE:-cpu}
+      - TORCH_DTYPE=${TORCH_DTYPE:-float32}
       - INITIAL_PEERS=${INITIAL_PEERS:-}
     command:
       - sh
       - -c
       - |
+        QUANT_ARGS=""
+        if [ -n "$$QUANT_TYPE" ]; then
+          QUANT_ARGS="--quant_type $$QUANT_TYPE"
+        fi
+        DEVICE_ARGS=""
+        if [ -n "$$DEVICE" ]; then
+          DEVICE_ARGS="--device $$DEVICE"
+        fi
+        DTYPE_ARGS=""
+        if [ -n "$$TORCH_DTYPE" ]; then
+          DTYPE_ARGS="--torch_dtype $$TORCH_DTYPE"
+        fi
+        echo "Getting model config for $$MODEL_NAME..."
+        NUM_BLOCKS=$(python3 -c "from transformers import AutoConfig; c = AutoConfig.from_pretrained('$$MODEL_NAME', trust_remote_code=True); n = getattr(c, 'num_hidden_layers', None) or getattr(c, 'n_layer', None) or getattr(c, 'num_layers', 28); print(n)" 2>/dev/null || echo "28")
+        echo "Model has $$NUM_BLOCKS blocks"
         if [ -z "$$INITIAL_PEERS" ]; then
           echo "No INITIAL_PEERS set — running standalone (single-node)."
           exec python -m petals.cli.run_server \
-            --model "$$MODEL_NAME" \
-            --inference_api http://0.0.0.0:31337 \
-            --num_blocks all \
-            --no_announce
+            "$$MODEL_NAME" \
+            --port 31337 \
+            --num_blocks "$$NUM_BLOCKS" \
+            --no_auto_relay \
+            $$QUANT_ARGS \
+            $$DEVICE_ARGS \
+            $$DTYPE_ARGS
         else
           exec python -m petals.cli.run_server \
-            --model "$$MODEL_NAME" \
-            --inference_api http://0.0.0.0:31337 \
-            --initial_peers $$INITIAL_PEERS
+            "$$MODEL_NAME" \
+            --port 31337 \
+            --initial_peers $$INITIAL_PEERS \
+            $$QUANT_ARGS \
+            $$DEVICE_ARGS \
+            $$DTYPE_ARGS
         fi
     stop_grace_period: 30s
 

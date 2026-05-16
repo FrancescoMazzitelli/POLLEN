@@ -1,4 +1,4 @@
-FROM ghcr.io/bigscience-workshop/petals:main
+FROM learningathome/petals:main
 
 # Petals inference server listening on port 31337
 # Connects to the decentralized Petals swarm (Raspberry Pi cluster)
