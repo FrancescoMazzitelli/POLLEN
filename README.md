@@ -358,7 +358,7 @@ Full Docker Compose stack with 15+ services, all dependency-ordered with health 
 | Env Variable | Default | Service | Purpose |
 |---|---|---|---|
 | `BACKEND_MODE` | `MOCK` | control-unit | `MOCK` for Microcks, `REAL` for production APIs |
-| `LLAMA_MODEL` | — | setup_llama_pi.sh | GGUF model name for inference |
+| `LLAMA_MODEL` | — | llama_pi.sh | GGUF model name for inference |
 | `PUBLIC_PORT` | `52415` | nginx (master) | External-facing API port |
 | `RPC_PORT` | `50052` | rpc-server | Inter-node RPC communication |
 | `API_PORT` | `11434` | llama-server | Local inference API port |
