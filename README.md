@@ -356,7 +356,7 @@ Full Docker Compose stack with 15+ services, all dependency-ordered with health 
 ## 10. Configuration
 
 | Env Variable | Default | Service | Purpose |
-|---|---|---|---|---|
+|---|---|---|---|
 | `BACKEND_MODE` | `MOCK` | control-unit | `MOCK` for Microcks, `REAL` for production APIs |
 | `LLAMA_MODEL` | — | setup_llama_pi.sh | GGUF model name for inference |
 | `PUBLIC_PORT` | `52415` | nginx (master) | External-facing API port |
