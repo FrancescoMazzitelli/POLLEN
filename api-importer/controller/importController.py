@@ -1,3 +1,5 @@
+"""REST controller exposing API import and schema enrichment endpoints."""
+
 from service import importService
 from flask import request, jsonify
 from flask_restx import Namespace, Resource, reqparse
@@ -9,7 +11,6 @@ import tempfile
 api = Namespace("importer", description="External API import and management")
 import_parser = reqparse.RequestParser()
 
-# Parser per upload file
 upload_parser = reqparse.RequestParser()
 upload_parser.add_argument("file",       location="files", type=FileStorage, required=True, help="OpenAPI YAML or JSON file")
 upload_parser.add_argument("id",         location="form",  type=str,         required=True, help="Service ID")
@@ -20,7 +21,7 @@ upload_parser.add_argument("base_url", location="form", type=str, required=False
 @api.route("/import")
 class ImportAPI(Resource):
     def post(self):
-        """Importa tutti i provider da apis.guru"""
+        """Import all providers from apis.guru."""
         import_service = importService.Service()
         try:
             import_service.import_apis()
@@ -31,7 +32,7 @@ class ImportAPI(Resource):
 @api.route("/import/<key>")
 class ImportSpecificAPI(Resource):
     def post(self, key):
-        """Importa un singolo provider da apis.guru tramite chiave (es: stripe.com)"""
+        """Import a single provider from apis.guru by key (e.g. stripe.com)."""
         import_service = importService.Service()
         try:
             providers = import_service.fetch_providers()
@@ -53,13 +54,12 @@ class ImportSpecificAPI(Resource):
 @api.route("/import/url")
 class ImportFromUrl(Resource):
     def post(self):
-        """
-        Importa un servizio a partire da un URL OpenAPI YAML/JSON pubblico.
+        """Import a service from a public OpenAPI YAML/JSON URL.
 
-        Body JSON:
+        JSON body:
           {
-            "id":          "restcountries",          (obbligatorio — service ID univoco)
-            "swagger_url": "https://..."             (obbligatorio — URL dello spec OpenAPI)
+            "id":          "restcountries",          (required - unique service ID)
+            "swagger_url": "https://..."             (required - URL to OpenAPI spec)
           }
         """
         data = request.get_json(force=True)
@@ -99,24 +99,22 @@ class ImportFromUrl(Resource):
 class ImportFromFile(Resource):
     @api.expect(upload_parser)
     def post(self):
-        """
-        Importa un servizio caricando direttamente un file OpenAPI YAML o JSON.
+        """Import a service by uploading an OpenAPI YAML or JSON file directly.
 
         Form data:
-          file — il file .yaml / .json OpenAPI  (obbligatorio)
-          id   — service ID univoco             (obbligatorio)
+          file - the OpenAPI .yaml / .json file (required)
+          id   - unique service ID           (required)
         """
         args = upload_parser.parse_args()
         uploaded_file = args["file"]
         service_id    = args.get("id") or args.get("service_id")
-        base_url      = args.get("base_url") # <--- ESTRAI IL NUOVO PARAMETRO
+        base_url      = args.get("base_url")
 
         if not service_id:
             return {"error": "Missing required field: 'id'"}, 400
         if not uploaded_file:
             return {"error": "Missing required field: 'file'"}, 400
 
-        # Salva il file in una posizione temporanea
         suffix = os.path.splitext(uploaded_file.filename)[1] or ".yaml"
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -126,7 +124,6 @@ class ImportFromFile(Resource):
             return {"error": f"Failed to save uploaded file: {e}"}, 500
 
         try:
-            # prance accetta sia URL http:// che path file://
             swagger_url = f"file://{tmp_path}"
 
             import_service = importService.Service()
@@ -149,7 +146,6 @@ class ImportFromFile(Resource):
             return {"error": str(e)}, 500
 
         finally:
-            # Pulizia file temporaneo
             try:
                 os.unlink(tmp_path)
             except Exception:
@@ -159,16 +155,15 @@ class ImportFromFile(Resource):
 @api.route("/enrich")
 class EnrichSchemas(Resource):
     def post(self):
-        """
-        Scarica gli YAML da Microcks tramite prance, estrae response_schemas
-        per ogni servizio registrato in MongoDB e aggiorna i documenti
-        tramite PATCH /services/<id>/schemas sul catalog-gateway.
+        """Download YAML specs from Microcks via prance, extract response_schemas
+        for each registered service in MongoDB, and update documents via
+        PATCH /services/<id>/schemas on the catalog-gateway.
 
-        Body JSON opzionale:
+        Optional JSON body:
           { "mock_server_url": "http://mock-server:8080" }
           { "service_id": "smart-charging-stations-mock" }
 
-        Risposta:
+        Returns:
           { "enriched": 5, "skipped": 1, "errors": 0 }
         """
         data            = request.get_json(silent=True) or {}

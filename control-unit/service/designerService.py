@@ -1,24 +1,21 @@
 """
-designerService.py
-==================
+Triage and API Designer fallback in a single LLM call.
 
-Triage + API Designer fallback in UNA sola chiamata LLM.
+When the main planner produces an empty plan (tasks=[]), the Controller
+delegates to this class for a SECOND LLM call that handles both tasks:
 
-Quando il planner principale produce un piano vuoto (tasks=[]), il Controller
-delega a questa classe una SECONDA chiamata LLM che fa due cose in un colpo:
+  1) CLASSIFIES the reason for the empty plan using a closed enum
+     (OUT_OF_DOMAIN / AMBIGUOUS / INVALID / UNKNOWN).
+  2) IF AND ONLY IF the category is OUT_OF_DOMAIN, also designs a
+     conceptual REST contract that would fill the gap; otherwise,
+     the service_contract field is null.
 
-  1) CLASSIFICA il motivo del piano vuoto scegliendo una categoria da un
-     enum chiuso (OUT_OF_DOMAIN / AMBIGUOUS / INVALID / UNKNOWN).
-  2) SE e solo se la categoria e' OUT_OF_DOMAIN, progetta anche un
-     contratto REST concettuale che coprirebbe il gap; altrimenti
-     il campo service_contract viene lasciato a null.
+Guided decoding via anyOf(null | contract) ensures the model cannot
+produce a malformed contract when one is not needed, and that when one
+is needed, all required fields are present.
 
-Il guided decoding di Ollama garantisce, tramite anyOf(null | contract),
-che il modello non possa produrre un contratto vuoto/malformato quando
-non serve, e che quando serve abbia tutti i campi richiesti.
-
-La classe e' stateless (nessun effetto collaterale, solo chiamate HTTP a
-Ollama) e dipende solo da 'requests' + stdlib.
+This class is stateless (no side effects, only HTTP calls to the LLM)
+and depends only on requests + stdlib.
 """
 
 import json
@@ -28,12 +25,14 @@ import time
 
 import requests
 
+from service.llm_provider import build_provider
+
 
 class Designer:
     """
-    Triage + designer. Metodo pubblico unico: analyze().
+    Triage and design agent. Public entry point: analyze().
 
-    Uso tipico dal Controller:
+    Typical usage from Controller:
 
         designer = Designer(fallback_model=controller.model_name)
         result = designer.analyze(
@@ -46,43 +45,19 @@ class Designer:
         # result == {
         #   "category":         "OUT_OF_DOMAIN" | "AMBIGUOUS" | "INVALID" | "UNKNOWN",
         #   "justification":    str,
-        #   "service_contract": dict | None,   # popolato solo se OUT_OF_DOMAIN
+        #   "service_contract": dict | None,
         # }
-        # In caso di errore/JSON invalido: result == {} (dict vuoto).
     """
 
-    # ------------------------------------------------------------------
-    # INIT
-    # ------------------------------------------------------------------
-
     def __init__(self, fallback_model: str = "glm-4.7-flash:q4_K_M"):
-        """
-        fallback_model:  modello da usare se la env DESIGNER_LLM_MODEL
-                         non e' settata. Tipicamente lo stesso del planner
-                         principale, passato dal Controller.
-        """
         self.model_name = os.environ.get("DESIGNER_LLM_MODEL", fallback_model)
-
-    # ------------------------------------------------------------------
-    # PROMPT BUILDERS
-    # ------------------------------------------------------------------
+        self.llm = build_provider(model_name=self.model_name)
 
     def _build_system_prompt(self) -> str:
-        """
-        System prompt unico per triage + design.
-
-        Struttura:
-          <role>/<task>/<categories>/<output_contract>/<design_principles>/
-          <rationale_protocol>/<hard_constraints>/<examples>
-
-        Le sezioni di design si applicano SOLO quando category == OUT_OF_DOMAIN.
-        """
-        # Esempio di contratto progettato: dominio (energy) volutamente
-        # diverso da quelli reali del progetto, per evitare imitazione.
         contract_example = {
             "rationale": (
                 "GAP: user asks for per-building energy consumption | "
-                "CATALOG: environment sensors, logistics warehouses, hospital wards — no energy data | "
+                "CATALOG: environment sensors, logistics warehouses, hospital wards \u2014 no energy data | "
                 "MISSING: no endpoint returns kWh readings per building | "
                 "PROPOSAL: smart-building-energy-mock with GET /building-meter"
             ),
@@ -151,24 +126,24 @@ Output ONLY a valid JSON object. Zero prose, zero markdown fences.
 Top-level schema:
   {{
     "category":         "OUT_OF_DOMAIN" | "AMBIGUOUS" | "INVALID" | "UNKNOWN",
-    "justification":    "string — ONE short sentence explaining the choice",
+    "justification":    "string \u2014 ONE short sentence explaining the choice",
     "service_contract": null  OR  <full contract object, see below>
   }}
 
 When category == "OUT_OF_DOMAIN", service_contract MUST be the full object:
   {{
-    "rationale":          "string — chain of draft, see <rationale_protocol>",
-    "service_name":       "string — human-readable name",
-    "service_id":         "string — machine id, kebab-case, suffix '-mock'",
-    "description":        "string — one-paragraph purpose of the service",
+    "rationale":          "string \u2014 chain of draft, see <rationale_protocol>",
+    "service_name":       "string \u2014 human-readable name",
+    "service_id":         "string \u2014 machine id, kebab-case, suffix '-mock'",
+    "description":        "string \u2014 one-paragraph purpose of the service",
     "suggested_endpoints":[ ...at least ONE endpoint... ],
-    "integration_notes":  "string — how this service joins with existing ones"
+    "integration_notes":  "string \u2014 how this service joins with existing ones"
   }}
 Each endpoint has: method, path, purpose, parameters, request_schema, response_schema.
 Use empty string "" for parameters / request_schema when not applicable.
 
 When category != "OUT_OF_DOMAIN", service_contract MUST be null. Do not
-invent a contract "just in case" — it is explicitly forbidden.
+invent a contract "just in case" \u2014 it is explicitly forbidden.
 </output_contract>
 
 <design_principles>
@@ -209,7 +184,7 @@ DP-6  PARAMETER ENUMS
 </design_principles>
 
 <rationale_protocol>
-Inside 'service_contract.rationale', use CHAIN OF DRAFT — one phase per line,
+Inside 'service_contract.rationale', use CHAIN OF DRAFT \u2014 one phase per line,
 keywords only, separated by ' | '. Never full sentences. Never "wait",
 "actually", "or perhaps".
 
@@ -228,10 +203,10 @@ HC-5  response_schema MUST be non-empty for every GET endpoint.
 </hard_constraints>
 
 <examples>
-Example 1 — out-of-domain (catalog has no library-style service):
+Example 1 \u2014 out-of-domain (catalog has no library-style service):
 {json.dumps(ood_example, indent=2)}
 
-Example 2 — ambiguous query:
+Example 2 \u2014 ambiguous query:
 {json.dumps(amb_example, indent=2)}
 </examples>
 """
@@ -241,11 +216,6 @@ Example 2 — ambiguous query:
                            discovered_services: list,
                            discovered_capabilities: list,
                            input_files=None) -> str:
-        """
-        User prompt: include catalogo compatto, ragionamento del planner e query.
-        Il plan_reasoning e' fondamentale: da' al triage l'indizio piu' forte
-        (il planner ha gia' scritto "no service provides X" o simili).
-        """
         lines = ["EXISTING CATALOG (do NOT duplicate any of these services):"]
         if discovered_services:
             for i, s in enumerate(discovered_services):
@@ -261,7 +231,7 @@ Example 2 — ambiguous query:
                     for key, cap_desc in caps.items():
                         if key == "POST /register":
                             continue
-                        lines.append(f"  {key}  —  {cap_desc}")
+                        lines.append(f"  {key}  \u2014  {cap_desc}")
         else:
             lines.append("(no services available in the current retrieval)")
 
@@ -277,19 +247,7 @@ USER QUERY:
 
 Classify and, if the category is OUT_OF_DOMAIN, design the missing service."""
 
-    # ------------------------------------------------------------------
-    # OUTPUT SCHEMA (guided decoding)
-    # ------------------------------------------------------------------
-
     def _build_output_schema(self) -> dict:
-        """
-        Schema unificato: category + justification + service_contract (null|obj).
-
-        L'uso di anyOf su service_contract forza il modello a scegliere:
-          - o null (quando la categoria non e' OUT_OF_DOMAIN)
-          - o l'oggetto completo con tutti i required popolati.
-        Non e' possibile produrre un contract parziale/malformato.
-        """
         contract_inner = {
             "type": "object",
             "properties": {
@@ -348,144 +306,85 @@ Classify and, if the category is OUT_OF_DOMAIN, design the missing service."""
             "additionalProperties": False,
         }
 
-    # ------------------------------------------------------------------
-    # VALIDAZIONE POST-PARSE
-    # ------------------------------------------------------------------
-
     def _validate_contract(self, contract: dict,
                            existing_ids: set) -> list[str]:
-        """
-        Check leggero su HC-1, HC-3, HC-5 dopo il parsing.
-        HC-2 (almeno un endpoint) e HC-4 (method enum) sono gia' garantiti
-        dal guided decoding (minItems=1 e enum nello schema).
-        Ritorna lista di warning; lista vuota = contratto pulito.
-        """
-        warnings: list[str] = []
+        warnings = []
 
         sid = contract.get("service_id", "")
         if not re.match(r"^[a-z][a-z0-9-]*-mock$", sid):
-            warnings.append(f"service_id '{sid}' non rispetta HC-3 "
-                            f"(atteso kebab-case con suffisso '-mock')")
+            warnings.append(f"service_id '{sid}' does not comply with HC-3 "
+                            f"(expected kebab-case with '-mock' suffix)")
 
         if sid in existing_ids:
-            warnings.append(f"service_id '{sid}' duplica un servizio "
-                            f"gia' presente nel catalogo (viola HC-1)")
+            warnings.append(f"service_id '{sid}' duplicates a service "
+                            f"already in the catalog (violates HC-1)")
 
         for idx, ep in enumerate(contract.get("suggested_endpoints", [])):
             if ep.get("method") == "GET" and not ep.get("response_schema"):
                 warnings.append(
                     f"endpoint #{idx} ({ep.get('method')} "
-                    f"{ep.get('path')}): response_schema vuoto per GET "
-                    f"(viola HC-5)"
+                    f"{ep.get('path')}): empty response_schema for GET "
+                    f"(violates HC-5)"
                 )
 
         return warnings
-
-    # ------------------------------------------------------------------
-    # ENTRY POINT
-    # ------------------------------------------------------------------
 
     def analyze(self, query: str,
                 plan_reasoning: str = "",
                 discovered_services: list = None,
                 discovered_capabilities: list = None,
                 input_files=None) -> dict:
-        """
-        UNICA chiamata LLM per il fallback:
-          - classifica il motivo del piano vuoto
-          - se OUT_OF_DOMAIN, progetta il servizio mancante
-          - altrimenti ritorna service_contract = None
-
-        Parametri:
-            query:                    la query utente originale
-            plan_reasoning:           il reasoning del planner (prima chiamata)
-            discovered_services:      servizi correntemente nel catalogo
-            discovered_capabilities:  capabilities per ciascun servizio
-            input_files:              allegati utente (se presenti)
-
-        Ritorna un dict:
-            {
-              "category":         str,   # enum
-              "justification":    str,
-              "service_contract": dict | None,
-            }
-        Oppure {} in caso di errore / JSON invalido.
-        """
         system_prompt = self._build_system_prompt()
-        user_prompt   = self._build_user_prompt(
+        user_prompt = self._build_user_prompt(
             query, plan_reasoning,
             discovered_services or [], discovered_capabilities or [],
             input_files,
         )
         output_schema = self._build_output_schema()
 
-        url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
-
         try:
-            t0 = time.perf_counter()
-            response = requests.post(
-                f"{url}/api/chat",
-                json={
-                    "model":    self.model_name,
-                    "format":   output_schema,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user",   "content": user_prompt},
-                    ],
-                    "think":   False,
-                    "options": {
-                        "temperature": 0.2,    # leggera creativita' solo per il design
-                        "num_ctx":     8192,
-                    },
-                    "stream":  False,
-                },
-                timeout=60,
+            raw, latency = self.llm.chat(
+                system_prompt, user_prompt, output_schema,
+                temperature=0.2, num_ctx=8192, timeout=60,
             )
-            response.raise_for_status()
-            raw     = response.json()["message"]["content"].strip()
-            latency = time.perf_counter() - t0
-            print(f"[LATENCY] Designer analyze completato in {latency:.2f}s")
+            print(f"[LATENCY] Designer analyze completed in {latency:.2f}s")
 
             try:
                 parsed = json.loads(raw)
             except json.JSONDecodeError:
-                print(f"[DESIGNER WARN] JSON non valido. Anteprima: {raw[:200]}")
+                print(f"[DESIGNER WARN] Invalid JSON. Preview: {raw[:200]}")
                 return {}
 
             if not isinstance(parsed, dict):
-                print(f"[DESIGNER WARN] Output non è un oggetto JSON: {type(parsed)}")
+                print(f"[DESIGNER WARN] Output is not a JSON object: {type(parsed)}")
                 return {}
 
-            category      = parsed.get("category", "UNKNOWN")
+            category = parsed.get("category", "UNKNOWN")
             justification = parsed.get("justification", "")
-            contract      = parsed.get("service_contract")
+            contract = parsed.get("service_contract")
 
             print(f"[DESIGNER] category:      {category}")
             print(f"[DESIGNER] justification: {justification}")
 
-            # Coerenza: se categoria != OUT_OF_DOMAIN, ignoriamo qualunque
-            # contract spurio prodotto dal modello (difesa in profondita').
             if category != "OUT_OF_DOMAIN":
                 if contract is not None:
-                    print("[DESIGNER] category non-OOD ma contract presente → ignoro.")
+                    print("[DESIGNER] Non-OOD category but contract present \u2014 ignoring.")
                 parsed["service_contract"] = None
                 return parsed
 
-            # category == OUT_OF_DOMAIN → il contract deve esserci
             if not isinstance(contract, dict):
-                print("[DESIGNER WARN] category=OUT_OF_DOMAIN ma contract "
-                      "mancante o non-dict.")
+                print("[DESIGNER WARN] category=OUT_OF_DOMAIN but contract "
+                      "missing or non-dict.")
                 return parsed
 
-            # Validazione leggera post-parse sul contract
             existing_ids = {s.get("_id") for s in (discovered_services or [])}
-            warnings     = self._validate_contract(contract, existing_ids)
+            warnings = self._validate_contract(contract, existing_ids)
             if warnings:
-                print(f"[DESIGNER VALIDATOR] {len(warnings)} warning/s:")
+                print(f"[DESIGNER VALIDATOR] {len(warnings)} warning(s):")
                 for w in warnings:
                     print(f"  - {w}")
             else:
-                print("[DESIGNER VALIDATOR] ✅ Contratto coerente.")
+                print("[DESIGNER VALIDATOR] Contract is coherent.")
 
             print(f"[DESIGNER] service_id:    {contract.get('service_id')}")
             print(f"[DESIGNER] service_name:  {contract.get('service_name')}")
@@ -494,8 +393,8 @@ Classify and, if the category is OUT_OF_DOMAIN, design the missing service."""
 
             return parsed
 
-        except requests.exceptions.RequestException as e:
-            print(f"[DESIGNER ERROR] HTTP: {e}")
+        except RuntimeError as e:
+            print(f"[DESIGNER ERROR] {e}")
             return {}
         except Exception as e:
             print(f"[DESIGNER ERROR] {e}")

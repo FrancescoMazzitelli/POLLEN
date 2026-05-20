@@ -1,16 +1,20 @@
+"""Flask application entry point for the Control Unit service."""
+
 from flask import Flask
 from flask_restx import Api
 from controller import controlUnitController
 from cheroot.wsgi import Server
 
 app = Flask(__name__)
-app.config['BUNDLE_ERRORS'] = True
+app.config["BUNDLE_ERRORS"] = True
 
-api = Api(app, 
-          title="Control unit", 
-          version="1.0", 
-          description="API documentation for the control unit service",
-          doc="/swagger")
+api = Api(
+    app,
+    title="Control unit",
+    version="1.0",
+    description="API documentation for the control unit service",
+    doc="/swagger",
+)
 
 BASE_PATH = "/api"
 

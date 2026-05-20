@@ -1,17 +1,25 @@
+"""
+Standalone plan validation script.
+
+Compares LLM-generated execution plans against CSV-based oracle ground truth.
+Computes precision, recall, F1, Jaccard, accuracy, coverage, and over/under-prediction rates.
+"""
+
 import json
 import csv
 import re
 from urllib.parse import urlparse
 import unicodedata
 
+
 def extract_method_and_paths(oracle_string):
-    """Extract method and path from a multiline Oracle string."""
+    """Extract (method, path) tuples from a multiline oracle string."""
     if not oracle_string:
         return []
-    
+
     cleaned = oracle_string.replace('"', '').replace('\\n', '\n').replace('\\r', '\r')
     lines = cleaned.strip().splitlines()
-    
+
     result = []
     for line in lines:
         parts = line.strip().split(maxsplit=1)
@@ -21,6 +29,7 @@ def extract_method_and_paths(oracle_string):
             result.append((method, path))
     return result
 
+
 def extract_method_and_path_from_task(task):
     method = task.get("operation")
     endpoint = task.get("endpoint", "")
@@ -28,19 +37,23 @@ def extract_method_and_path_from_task(task):
     path = parsed.path.rstrip('/')
     return method, path
 
+
 def normalize_question(q):
     q = q.strip().lower()
     q = unicodedata.normalize("NFKD", q)
-    q = re.sub(r"[‘’´`]", "'", q)
-    q = re.sub(r"[“”]", '"', q)
-    q = re.sub(r"\s+", " ", q)
+    q = re.sub(r"[\\u2018\\u2019\\u00b4\\u0060]", "'", q)
+    q = re.sub(r"[\\u201c\\u201d]", '"', q)
+    q = re.sub(r"\\s+", " ", q)
     return q
+
 
 def load_json_questions(json_path):
     with open(json_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
+
 def load_csv_oracles(csv_path):
+    """Build a mapping from normalized question to list of (method, path) oracle steps."""
     oracle_map = {}
     with open(csv_path, 'r', newline='', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
@@ -53,7 +66,9 @@ def load_csv_oracles(csv_path):
                 oracle_map[question] = extract_method_and_paths(oracle_raw)
     return oracle_map
 
+
 def compare(json_data, oracle_map):
+    """Compare each execution plan against its oracle and compute per-query metrics."""
     results = []
 
     for item in json_data:
@@ -65,7 +80,6 @@ def compare(json_data, oracle_map):
         mismatches = []
         matched_indices = set()
 
-        # Matching logic
         for task in tasks:
             task_method, task_path = extract_method_and_path_from_task(task)
 
@@ -82,14 +96,12 @@ def compare(json_data, oracle_map):
             if not match_found:
                 mismatches.append({"task": (task_method, task_path), "oracle": None})
 
-        # Status assignment
         status = "correct"
         if matches and mismatches:
             status = "partial"
         elif not matches:
             status = "incorrect"
 
-        # === METRICHE ===
         tp = len(matches)
         fp = len(mismatches)
         fn = max(0, len(oracle_steps) - tp)
@@ -117,7 +129,6 @@ def compare(json_data, oracle_map):
             "total_tasks": len(tasks),
             "matched_tasks": len(matches),
 
-            # New metrics
             "precision": precision,
             "recall": recall,
             "f1": f1,
@@ -130,12 +141,13 @@ def compare(json_data, oracle_map):
 
             "tp": tp,
             "fp": fp,
-            "fn": fn
+            "fn": fn,
         }
 
         results.append(comparison)
 
     return results
+
 
 def write_detailed_output(results, filename):
     with open(filename, 'w', encoding='utf-8') as f:
@@ -158,7 +170,6 @@ def write_detailed_output(results, filename):
                     f.write(f"  - Task:   {task[0]} {task[1]}\n")
                     f.write("    Oracle: None\n")
 
-            # Metrics
             f.write("\nMetrics:\n")
             f.write(f"Precision: {result['precision']:.3f}\n")
             f.write(f"Recall:    {result['recall']:.3f}\n")
@@ -173,7 +184,9 @@ def write_detailed_output(results, filename):
 
             f.write(f"Status: {result['status'].upper()}\n\n")
 
+
 def write_summary_output(results, filename):
+    """Compute and write aggregate metrics across all queries."""
     total = len(results)
     correct = sum(1 for r in results if r['status'] == 'correct')
     partial = sum(1 for r in results if r['status'] == 'partial')
@@ -182,27 +195,22 @@ def write_summary_output(results, filename):
     total_endpoints = sum(r['total_tasks'] for r in results)
     matched_endpoints = sum(r['matched_tasks'] for r in results)
 
-    # Global confusion values
     total_tp = sum(r["tp"] for r in results)
     total_fp = sum(r["fp"] for r in results)
     total_fn = sum(r["fn"] for r in results)
 
-    # Micro averaging
     micro_precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) else 0
     micro_recall = total_tp / (total_tp + total_fn) if (total_tp + total_fn) else 0
     micro_f1 = 2 * micro_precision * micro_recall / (micro_precision + micro_recall) if (micro_precision + micro_recall) else 0
 
-    # Macro averaging
     macro_precision = sum(r["precision"] for r in results) / total
     macro_recall = sum(r["recall"] for r in results) / total
     macro_f1 = sum(r["f1"] for r in results) / total
 
-    # Global metrics
     global_accuracy = total_tp / (total_tp + total_fp + total_fn) if (total_tp + total_fp + total_fn) else 0
     global_jaccard = total_tp / (total_tp + total_fp + total_fn) if (total_tp + total_fp + total_fn) else 0
 
     with open(filename, 'w', encoding='utf-8') as f:
-
         f.write("Summary Report\n")
         f.write("=================\n")
         f.write(f"Total execution plans: {total}\n")
@@ -219,7 +227,6 @@ def write_summary_output(results, filename):
         f.write(f"- Incorrect: {incorrect / total * 100:.2f}%\n")
         f.write(f"- Endpoint match rate: {matched_endpoints / total_endpoints * 100:.2f}%\n")
 
-        # --- NEW METRICS ---
         f.write("\nGlobal Metrics:\n")
         f.write(f"Total TP: {total_tp}\n")
         f.write(f"Total FP: {total_fp}\n")
@@ -235,21 +242,3 @@ def write_summary_output(results, filename):
 
         f.write(f"Global Accuracy: {global_accuracy:.3f}\n")
         f.write(f"Global Jaccard:  {global_jaccard:.3f}\n")
-
-# === CONFIGURATION ===
-BASE_PATH = "smart-city-results/test-with-reranker-roles"
-json_file = f"{BASE_PATH}/execution_plans.json"
-csv_file = "smart-city-requests/requests_roles.csv"
-detailed_output = f"{BASE_PATH}/request_oracle_details.txt"
-summary_output = f"{BASE_PATH}/request_oracle_summary.txt"
-
-# === EXECUTION ===
-json_data = load_json_questions(json_file)
-oracle_map = load_csv_oracles(csv_file)
-results = compare(json_data, oracle_map)
-write_detailed_output(results, detailed_output)
-write_summary_output(results, summary_output)
-
-print("Analysis completed. Output saved to:")
-print(f"  - {detailed_output}")
-print(f"  - {summary_output}")

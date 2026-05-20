@@ -16,7 +16,6 @@ import json
 import os
 import sys
 import glob
-import re
 from statistics import mean
 
 import numpy as np
@@ -39,7 +38,7 @@ def parse_args():
 
 
 def discover_results():
-    """Scan results/ and return {model: {config: latencies_list}}"""
+    """Scan results/ and return {model: {config: latencies_list}}."""
     data = {}
     pattern = os.path.join(RESULTS_DIR, "*", "dist-*", "baseline", "latencies.csv")
     for csv_path in glob.glob(pattern):
@@ -56,6 +55,7 @@ def discover_results():
 
 
 def calculate_qos_metrics(latencies, label):
+    """Compute QoS statistics for a latency series."""
     lat = np.array(latencies)
     n = len(lat)
     total_time = np.sum(lat)
@@ -87,6 +87,7 @@ def calculate_qos_metrics(latencies, label):
 
 
 def print_qos(data):
+    """Print QoS metrics for all model/config combinations."""
     print(f"\n{'='*72}")
     print("QoS Metrics")
     print(f"{'='*72}")
@@ -99,7 +100,7 @@ def print_qos(data):
 
 
 def plot_latency_curves(data, output_dir, log_y=True):
-    """Scatter plot with IQR band, median, p95, min/max for each model."""
+    """Scatter plot with IQR band, median, p95, min/max per model."""
     for config in sorted({c for m in data for c in data[m]}):
         fig = go.Figure()
         colors = [
@@ -131,7 +132,7 @@ def plot_latency_curves(data, output_dir, log_y=True):
             fig.add_trace(go.Scatter(x=x, y=maxv, mode="lines", line=dict(color=base_color, width=1, dash="dot"), showlegend=False, legendgroup=lg, hoverinfo="skip"))
 
         fig.update_layout(
-            title=f"Latency Curves — {config}",
+            title=f"Latency Curves \u2014 {config}",
             xaxis_title="Question index",
             yaxis_title="Latency (seconds)",
             template="simple_white",
@@ -184,7 +185,7 @@ def plot_boxplot(data, output_dir):
 
 
 def plot_bar_chart(data, output_dir):
-    """Bar chart per-config comparing models."""
+    """Per-config bar chart comparing model latencies."""
     configs = sorted({c for m in data for c in data[m]})
     models = sorted(data.keys())
     palette = ["rgba(31, 119, 180, 0.7)", "rgba(255, 127, 14, 0.7)",
@@ -225,7 +226,7 @@ def plot_bar_chart(data, output_dir):
             ))
 
         fig.update_layout(
-            title=f"Latency per Response — {config}",
+            title=f"Latency per Response \u2014 {config}",
             xaxis_title="Response index",
             yaxis_title="Latency (seconds)",
             template="plotly_white",
@@ -241,7 +242,7 @@ def plot_bar_chart(data, output_dir):
 
 
 def load_metrics(models, configs):
-    """Load RestBench metrics from results/<model>/<config>/metrics.json"""
+    """Load RestBench metrics from results/<model>/<config>/metrics.json."""
     metrics = {}
     for model in models:
         for config in configs:
@@ -258,7 +259,7 @@ def print_summary_table(data, output_dir, restbench_metrics=None):
     configs = sorted({c for m in data for c in data[m]})
 
     lines = []
-    lines.append(f"{'Model':<12} {'Config':<10} {'Count':>6} {'Avg(s)':>8} {'p50(s)':>8} {'p95(s)':>8} {'S%':>6} {'CP%':>6} {'ΔSL':>6}")
+    lines.append(f"{'Model':<12} {'Config':<10} {'Count':>6} {'Avg(s)':>8} {'p50(s)':>8} {'p95(s)':>8} {'S%':>6} {'CP%':>6} {'\u0394SL':>6}")
     lines.append("-" * 74)
 
     for model in models:
@@ -270,7 +271,7 @@ def print_summary_table(data, output_dir, restbench_metrics=None):
                 p50 = np.percentile(lat, 50)
                 p95 = np.percentile(lat, 95)
 
-                s_val = cp_val = dsl_val = "—"
+                s_val = cp_val = dsl_val = "\u2014"
                 if restbench_metrics and (model, config) in restbench_metrics:
                     m = restbench_metrics[(model, config)]
                     s_val = f"{m['S']}%"
@@ -281,7 +282,7 @@ def print_summary_table(data, output_dir, restbench_metrics=None):
 
     table = "\n".join(lines)
     print(f"\n{'='*74}")
-    print("  Benchmark Summary — Latency + RestBench Metrics")
+    print("  Benchmark Summary \u2014 Latency + RestBench Metrics")
     print(f"{'='*74}")
     print(table)
 

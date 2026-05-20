@@ -107,11 +107,11 @@ def do_configure(args):
     config_num = args.config.split("-")[1]
     results_dir = f"results/{args.model}/{args.config}/baseline"
 
-    print(f"\n  ✅ .env.pi updated for {args.model} ({args.config})")
+    print(f"\n  .env.pi updated for {args.model} ({args.config})")
     print(f"     PETALS_MODEL={model['id']}")
     print(f"     QUANT_TYPE={model['quant']}")
     print()
-    print(f"  ▶ Now run these steps manually:")
+    print(f"  Now run these steps manually:")
     print()
     print(f"  1. Restart the swarm:")
     print(f"     docker compose -f docker-compose.pi.yml up -d")
@@ -126,6 +126,10 @@ def do_configure(args):
 
 
 def compute_metrics(csv_path):
+    """Compute S%, CP%, DeltaSL from a latencies CSV file.
+
+    Expected columns: verdict, l1_verdict, tasks_count, oracle_count, latency_s
+    """
     with open(csv_path) as f:
         rows = list(csv.DictReader(f))
 
@@ -163,6 +167,7 @@ def compute_metrics(csv_path):
 
 
 def do_process():
+    """Scan results/ directory and produce a metrics summary table."""
     results_base = os.path.join(PROJECT_ROOT, "results")
     if not os.path.exists(results_base):
         print("No results/ directory found.")
@@ -189,23 +194,23 @@ def do_process():
         return
 
     print(f"\n{'='*80}")
-    print(f"  POLLEN Benchmark — RestBench Metrics Summary")
+    print(f"  POLLEN Benchmark \u2014 RestBench Metrics Summary")
     print(f"{'='*80}")
-    print(f"  {'Model':<12} {'Config':<10} {'Queries':>8} {'OK':>5} {'S%':>7} {'CP%':>7} {'ΔSL':>7} {'Avg(s)':>8} {'p50(s)':>8} {'p95(s)':>8}")
+    print(f"  {'Model':<12} {'Config':<10} {'Queries':>8} {'OK':>5} {'S%':>7} {'CP%':>7} {'\u0394SL':>7} {'Avg(s)':>8} {'p50(s)':>8} {'p95(s)':>8}")
     print(f"  {'-'*80}")
 
     for model, config, metrics, csv_path, m_path in entries:
         lat = metrics.get("latencies", [])
-        avg = f"{sum(lat)/len(lat):.2f}" if lat else "—"
-        p50 = f"{sorted(lat)[len(lat)//2]:.2f}" if lat else "—"
-        p95_val = sorted(lat)[int(len(lat)*0.95)] if lat else "—"
-        p95 = f"{p95_val:.2f}" if isinstance(p95_val, float) else "—"
+        avg = f"{sum(lat)/len(lat):.2f}" if lat else "\u2014"
+        p50 = f"{sorted(lat)[len(lat)//2]:.2f}" if lat else "\u2014"
+        p95_val = sorted(lat)[int(len(lat)*0.95)] if lat else "\u2014"
+        p95 = f"{p95_val:.2f}" if isinstance(p95_val, float) else "\u2014"
 
         print(f"  {model:<12} {config:<10} {metrics['total']:>8} {metrics['successful']:>5} "
               f"{metrics['S']:>6}% {metrics['CP']:>6}% {metrics['DeltaSL']:>6.1f} "
               f"{avg:>8} {p50:>8} {p95:>8}")
-        print(f"  {'→ CSV:':<8} {csv_path}")
-        print(f"  {'→ JSON:':<8} {m_path}")
+        print(f"  {'CSV:':<8} {csv_path}")
+        print(f"  {'JSON:':<8} {m_path}")
         print()
 
     print(f"  Generate plots: python benchmark/plots.py")

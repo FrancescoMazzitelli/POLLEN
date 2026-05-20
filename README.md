@@ -1,6 +1,6 @@
-# POLLEN — Plan Orchestration with LLM-based ENgine
+# POLLEN: Prompt-based Orchestration of LLM-decomposed services over Edge Nodes
 
-POLLEN is an AI-powered API orchestration system that translates natural language queries into executable multi-step API execution plans. It combines a semantic service catalog, an LLM-based planner with guided JSON decoding, a multi-stage retrieval pipeline, and a distributed model inference backend running on a Petals swarm of Raspberry Pis.
+POLLEN is an AI-powered API orchestration system that translates natural language queries into executable multi-step API execution plans. It combines a semantic service catalog, an LLM-based planner with guided JSON decoding, a multi-stage retrieval pipeline, and a distributed model inference backend running on a llama.cpp RPC cluster of Raspberry Pis.
 
 ## Architecture Overview
 
@@ -8,7 +8,7 @@ The system is composed of 15+ Docker services orchestrated via Docker Compose, d
 
 - **Data Layer**: MongoDB + Qdrant + Redis for service metadata, vector search, and health status
 - **Business Logic Layer**: Control Unit (planner/executor), API Importer, Catalog Gateway (semantic search), Healthcheck Service
-- **Infrastructure Layer**: Consul (service discovery), Microcks (mock API server), Petals (distributed LLM inference)
+- **Infrastructure Layer**: Consul (service discovery), Microcks (mock API server), llama.cpp RPC (distributed LLM inference)
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ Main entry point. Accepts `{"input": "user query"}` and returns an execution pla
 The core planning-execution pipeline:
 1. **Service Discovery** — Queries Consul for registered service instances
 2. **Semantic Retrieval** — Sends query to the Catalog Gateway (`/index/search`) for two-stage retrieval
-3. **LLM Planning** — Sends system prompt + catalog to Ollama/Petals with structured output (guided JSON decoding). The model produces a JSON execution plan with a `reasoning` field and a `tasks` array
+3. **LLM Planning** — Sends system prompt + catalog to the llama.cpp RPC proxy (`localhost:52415`) with structured output (guided JSON decoding). The model produces a JSON execution plan with a `reasoning` field and a `tasks` array
 4. **Plan Validation** — Post-parse validation via `PlanValidator`:
    - Checks required fields, valid operations (`GET/POST/PUT/DELETE/SQL`)
    - Validates service IDs against available catalog entries
@@ -145,37 +145,116 @@ The system prompt (1600+ lines) includes:
 
 ---
 
-## 4. Petals Proxy (`petals-proxy/`)
+## 4. Distributed LLM Inference — llama.cpp RPC Cluster
 
-**Port: 11434** — FastAPI service translating Ollama-compatible `/api/chat` requests to OpenAI-compatible `/v1/chat/completions` for the Petals inference server.
+**Exposed port: 52415** — OpenAI-compatible `/v1/chat/completions` endpoint served by a distributed llama.cpp RPC cluster.
+
+The inference backend runs across a cluster of Raspberry Pis using llama.cpp's native RPC mechanism: a single **master** node runs `llama-server` and an nginx reverse proxy, while **worker** nodes run `rpc-server` to share their compute and RAM.
+
+### Architecture
+
+```
+                     ┌──────────────────────┐
+                     │  External client     │
+                     │  :2130 → :52415      │
+                     └────────┬─────────────┘
+                              │
+                     ┌────────▼─────────────┐
+                     │   nginx (master)     │
+                     │   reverse proxy      │
+                     │   :52415 → :11434    │
+                     └────────┬─────────────┘
+                              │
+                     ┌────────▼─────────────┐
+                     │  llama-server        │
+                     │  (inference master)  │
+                     │  :11434              │
+                     └──┬───────┬───────┬───┘
+                        │       │       │
+              ┌─────────┘  ┌────┘       └──────┐
+              │            │                   │
+     ┌────────▼─────┐ ┌────▼────────┐ ┌────────▼─────┐
+     │ rpc-server   │ │ rpc-server  │ │ rpc-server   │
+     │ (worker 1)   │ │ (worker 2)  │ │ (worker N)   │
+     │ :50052       │ │ :50052      │ │ :50052       │
+     └──────────────┘ └─────────────┘ └──────────────┘
+```
+
+Each node loads a portion of the model layers via RPC, allowing models larger than a single Pi's RAM to run across the cluster. Communication between master and workers uses TCP on port 50052.
+
+### Setup
+
+A single script handles the entire deployment:
+
+```bash
+# On the master Pi (exposes port 52415):
+./llama_pi.sh install master
+
+# On each worker Pi:
+./llama_pi.sh install worker
+```
+
+After installation, start the cluster:
+
+```bash
+# On all nodes:
+sudo systemctl start llama-rpc llama-discovery
+
+# On the master, load a GGUF model:
+./llama_pi.sh load https://huggingface.co/bartowski/...gguf
+
+# Start the inference server:
+sudo systemctl start llama-server
+```
+
+### Worker Discovery (mDNS)
+
+Workers are auto-discovered via mDNS (`_llama-rpc._tcp`). A Python daemon (`llama-discovery.py`) runs on every node:
+- **Workers** announce their IP and RPC port
+- **Master** listens for announcements and updates `/etc/llama-cluster.conf` dynamically, restarting `llama-server` when the cluster topology changes
+
+### Quick Status
+
+```bash
+~/llama-status.sh
+```
+
+Displays running services, model name, connected workers, and common commands.
+
+---
+
+## 5. Inference API — nginx + llama-server
+
+**Exposed port: 52415** — OpenAI-compatible `/v1/chat/completions` endpoint served through nginx, forwarding to `llama-server` on port 11434.
 
 ### Endpoints
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/api/chat` | POST | Ollama-compatible chat completion |
-| `/api/tags` | GET | List available models |
-| `/health` | GET | Healthcheck |
+| `/v1/chat/completions` | POST | Chat completion (OpenAI-compatible) |
 
-### Structured Output Enforcement
-When a `format` schema is provided (JSON guided decoding):
-1. Injects a system prompt: "You must respond with ONLY valid JSON matching the schema below"
-2. Calls Petals with standard OpenAI API format
-3. Extracts JSON from the response (handles markdown fences)
-4. Validates against the provided JSON schema via `jsonschema`
-5. Retries up to `MAX_RETRIES` (default: 3) with progressively stricter prompts on failure
+The Control Unit sends requests to the proxy on port 52415 (via nginx), which forwards them to `llama-server` on port 11434. `llama-server` distributes inference across RPC workers in the cluster.
 
----
+### Supported Models
 
-## 5. Petals Inference (`petals-inference/`)
+Any GGUF model from HuggingFace can be loaded dynamically:
 
-**Port: 31337** — Docker container running the Petals decentralized inference server.
+```bash
+./llama_pi.sh load <hf-gguf-url>
+```
 
-- Uses `ghcr.io/bigscience-workshop/petals:main`
-- Can run in **standalone mode** (single node, no swarm) when `INITIAL_PEERS` is empty
-- Connects to a **distributed swarm** of Raspberry Pis when `INITIAL_PEERS` is configured
-- Model: `meta-llama/Meta-Llama-3.1-8B-Instruct` (requires `HF_TOKEN`)
-- Persistent HuggingFace cache volume
+The model is downloaded, validated (GGUF magic bytes), and configured in `/etc/llama-server.env`. The `llama-server` service is restarted automatically after loading.
+
+### Testing
+
+```bash
+curl http://<master-ip>:52415/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [{"role": "user", "content": "Tell me a joke"}],
+    "max_tokens": 200
+  }'
+```
 
 ---
 
@@ -269,9 +348,6 @@ Imports each OpenAPI YAML from `MOCKS-smart-city/apis/` into Microcks, then patc
 - **POST /register**: Custom Groovy script that dynamically registers the service in Consul + MongoDB
 - **GET list**: Custom Groovy script providing dynamic list responses
 
-### `register.sh`
-Calls `POST /register` on each deployed mock service to trigger the registration pipeline.
-
 ### `Compose.yaml`
 Full Docker Compose stack with 15+ services, all dependency-ordered with health checks. Environment variables control backend mode (`MOCK`/`REAL`), model selection, and API authentication headers.
 
@@ -280,15 +356,15 @@ Full Docker Compose stack with 15+ services, all dependency-ordered with health 
 ## 10. Configuration
 
 | Env Variable | Default | Service | Purpose |
-|---|---|---|---|
+|---|---|---|---|---|
 | `BACKEND_MODE` | `MOCK` | control-unit | `MOCK` for Microcks, `REAL` for production APIs |
-| `PETALS_MODEL` | `meta-llama/Meta-Llama-3.1-8B-Instruct` | multiple | LLM model for planning |
+| `LLAMA_MODEL` | — | setup_llama_pi.sh | GGUF model name for inference |
+| `PUBLIC_PORT` | `52415` | nginx (master) | External-facing API port |
+| `RPC_PORT` | `50052` | rpc-server | Inter-node RPC communication |
+| `API_PORT` | `11434` | llama-server | Local inference API port |
+| `THREADS` | `4` | llama-server | CPU threads per node |
 | `USE_LLM_DECOMPOSITION` | `true` | db-gateway | Enable LLM query decomposition in Stage 0 |
-| `HF_TOKEN` | — | petals-inference | HuggingFace token for gated models |
-| `INITIAL_PEERS` | — | petals-inference | Petals swarm peer multiaddrs |
 | `API_AUTH_HEADERS` | — | control-unit | JSON object of auth headers for REAL mode |
-| `PROXY_MAX_RETRIES` | `3` | petals-proxy | Max retries for structured output |
-| `PROXY_TIMEOUT` | `180` | petals-proxy | Request timeout |
 
 ---
 
