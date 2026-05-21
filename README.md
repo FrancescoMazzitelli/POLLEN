@@ -147,85 +147,180 @@ The system prompt (1600+ lines) includes:
 
 ## 4. Distributed LLM Inference — llama.cpp RPC Cluster
 
-**Exposed port: 52415** — OpenAI-compatible `/v1/chat/completions` endpoint served by a distributed llama.cpp RPC cluster.
+**Exposed API port: 52415** (mapped externally as `192.168.241.2:2131` per master, `2132` per worker, etc.)
 
-The inference backend runs across a cluster of Raspberry Pis using llama.cpp's native RPC mechanism: a single **master** node runs `llama-server` and an nginx reverse proxy, while **worker** nodes run `rpc-server` to share their compute and RAM.
+The inference backend runs across a cluster of Raspberry Pis using llama.cpp's native RPC mechanism. A single **master** node runs `llama-server` + nginx; **worker** nodes run `rpc-server` to share compute and RAM.
+
+Due to WiFi client isolation, nodes cannot communicate directly over the LAN. Traffic between master and workers passes through **SSH reverse tunnels** (port 22, always open).
 
 ### Architecture
 
 ```
-                     ┌──────────────────────┐
-                     │  External client     │
-                     │  :2130 → :52415      │
-                     └────────┬─────────────┘
-                              │
-                     ┌────────▼─────────────┐
-                     │   nginx (master)     │
-                     │   reverse proxy      │
-                     │   :52415 → :11434    │
-                     └────────┬─────────────┘
-                              │
-                     ┌────────▼─────────────┐
-                     │  llama-server        │
-                     │  (inference master)  │
-                     │  :11434              │
-                     └──┬───────┬───────┬───┘
-                        │       │       │
-              ┌─────────┘  ┌────┘       └──────┐
-              │            │                   │
-     ┌────────▼─────┐ ┌────▼────────┐ ┌────────▼─────┐
+                    ┌──────────────────────┐
+                    │  External client     │
+                    │  192.168.241.2:2131  │
+                    └────────┬─────────────┘
+                             │
+                    ┌────────▼─────────────┐
+                    │   nginx (master)     │
+                    │   :52415 → :11434    │
+                    └────────┬─────────────┘
+                             │
+                    ┌────────▼─────────────┐
+                    │  llama-server        │
+                    │  (inference master)  │
+                    │  :11434              │
+                    └────────┬─────────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+     ┌────────▼─────┐ ┌──────▼──────┐ ┌─────▼────────┐
+     │ SSH tunnel   │ │ SSH tunnel  │ │ SSH tunnel   │
+     │ 127.0.0.1    │ │ 127.0.0.1   │ │ 127.0.0.1    │
+     │ :50164       │ │ :50165      │ │ :50166       │
+     └──────┬───────┘ └──────┬──────┘ └──────┬───────┘
+            │                │                │
+     ┌──────▼───────┐ ┌──────▼──────┐ ┌──────▼───────┐
      │ rpc-server   │ │ rpc-server  │ │ rpc-server   │
      │ (worker 1)   │ │ (worker 2)  │ │ (worker N)   │
      │ :50052       │ │ :50052      │ │ :50052       │
      └──────────────┘ └─────────────┘ └──────────────┘
 ```
 
-Each node loads a portion of the model layers via RPC, allowing models larger than a single Pi's RAM to run across the cluster. Communication between master and workers uses TCP on port 50052.
+Each node loads a portion of the model layers via RPC. Workers are reachable through SSH reverse tunnels: each worker opens an outbound SSH connection to the master and exposes its `rpc-server` on a unique localhost port (e.g. `50164` for IP `.164`).
 
-### Setup
+### Prerequisites — SSH Key Setup
 
-A single script handles the entire deployment:
+Before installing, each worker must be able to SSH to the master **without password**:
 
 ```bash
-# On the master Pi (exposes port 52415):
+# On each worker:
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
+ssh-copy-id -p 2121 pi@192.168.241.2
+```
+
+Test it:
+
+```bash
+ssh -p 2121 pi@192.168.241.2 echo ok    # must print "ok" without asking password
+```
+
+### Full Node Deployment
+
+**Step 1 — Master:**
+
+```bash
+# Copy script & install
+scp -P 2121 ./llama_pi.sh pi@192.168.241.2:~/
+ssh -p 2121 pi@192.168.241.2
 ./llama_pi.sh install master
-
-# On each worker Pi:
-./llama_pi.sh install worker
+sudo systemctl start llama-rpc
 ```
 
-After installation, start the cluster:
+**Step 2 — Each worker (first, set up SSH key to master):**
 
 ```bash
-# On all nodes:
-sudo systemctl start llama-rpc llama-discovery
+# On each worker — one-time SSH key setup:
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
+ssh-copy-id -p 2121 pi@192.168.241.2           # inserisci password master un'ultima volta
+ssh -p 2121 pi@192.168.241.2 echo ok            # deve funzionare senza password
 
-# On the master, load a GGUF model:
-./llama_pi.sh load https://huggingface.co/bartowski/...gguf
-
-# Start the inference server:
-sudo systemctl start llama-server
+# Then install & start:
+scp -P 2122 ./llama_pi.sh pi@192.168.241.2:~/   # 2122, 2123, ... (worker SSH port)
+ssh -p 2122 pi@192.168.241.2
+./llama_pi.sh install worker
+sudo systemctl start llama-rpc
+./llama_pi.sh tunnel 192.168.241.2 2121           # SSH tunnel + auto-registration
 ```
 
-### Worker Discovery (mDNS)
+The `tunnel` command does three things automatically:
+1. Calculates a unique tunnel port from the worker's IP (`50000 + last octet`)
+2. Creates and starts `llama-tunnel.service` (persistent SSH reverse tunnel)
+3. Registers the worker on the master via SSH as `127.0.0.1:<tunnel-port>`
 
-Workers are auto-discovered via mDNS (`_llama-rpc._tcp`). A Python daemon (`llama-discovery.py`) runs on every node:
-- **Workers** announce their IP and RPC port
-- **Master** listens for announcements and updates `/etc/llama-cluster.conf` dynamically, restarting `llama-server` when the cluster topology changes
+**Step 3 — Load a model & start inference (on master):**
 
-### Quick Status
+```bash
+ssh -p 2121 pi@192.168.241.2
+./llama_pi.sh load https://huggingface.co/bartowski/...gguf
+sudo systemctl restart llama-server
+```
+
+### Checking Node Connectivity
+
+**From the master — verify tunnel ports are listening:**
+
+```bash
+ss -tlnp | grep 5016
+```
+
+Each worker appears as `127.0.0.1:50164`, `127.0.0.1:50165`, etc. — one per node.
+
+**From the master — check registered workers:**
+
+```bash
+./llama_pi.sh list-workers
+```
+
+**Overall cluster status:**
 
 ```bash
 ~/llama-status.sh
 ```
 
-Displays running services, model name, connected workers, and common commands.
+Shows running services, model name, connected workers, and common commands.
+
+**Test inference from outside:**
+
+```bash
+curl http://192.168.241.2:2131/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [{"role": "user", "content": "Tell me a joke"}],
+    "max_tokens": 200
+  }'
+```
+
+### Adding a New Worker Later
+
+```bash
+# First, set up SSH key (one-time):
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
+ssh-copy-id -p 2121 pi@192.168.241.2
+ssh -p 2121 pi@192.168.241.2 echo ok
+
+# Then install & tunnel:
+scp -P <ssh-port> ./llama_pi.sh pi@192.168.241.2:~/
+ssh -p <ssh-port> pi@192.168.241.2
+./llama_pi.sh install worker
+sudo systemctl start llama-rpc
+./llama_pi.sh tunnel 192.168.241.2 2121     # auto-registers on master
+```
+
+Then on the master, restart inference to include the new worker:
+
+```bash
+ssh -p 2121 pi@192.168.241.2
+sudo systemctl restart llama-server
+```
+
+### Removing a Worker
+
+```bash
+# On the master:
+ssh -p 2121 pi@192.168.241.2
+./llama_pi.sh remove-worker 127.0.0.1:50164
+sudo systemctl restart llama-server
+
+# On that worker (tear down tunnel):
+./llama_pi.sh clean-tunnel
+```
 
 ---
 
 ## 5. Inference API — nginx + llama-server
 
-**Exposed port: 52415** — OpenAI-compatible `/v1/chat/completions` endpoint served through nginx, forwarding to `llama-server` on port 11434.
+**Port: 52415** — OpenAI-compatible `/v1/chat/completions` endpoint served through nginx, forwarding to `llama-server` on port 11434.
 
 ### Endpoints
 
@@ -233,7 +328,7 @@ Displays running services, model name, connected workers, and common commands.
 |---|---|---|
 | `/v1/chat/completions` | POST | Chat completion (OpenAI-compatible) |
 
-The Control Unit sends requests to the proxy on port 52415 (via nginx), which forwards them to `llama-server` on port 11434. `llama-server` distributes inference across RPC workers in the cluster.
+The Control Unit sends requests to nginx on port 52415 (externally `192.168.241.2:2131`), which forwards to `llama-server` on port 11434. `llama-server` distributes inference across RPC workers via their SSH tunnel endpoints.
 
 ### Supported Models
 
@@ -243,12 +338,12 @@ Any GGUF model from HuggingFace can be loaded dynamically:
 ./llama_pi.sh load <hf-gguf-url>
 ```
 
-The model is downloaded, validated (GGUF magic bytes), and configured in `/etc/llama-server.env`. The `llama-server` service is restarted automatically after loading.
+The model is downloaded, validated (GGUF magic bytes), and configured in `/etc/llama-server.env`. `llama-server` restarts automatically after loading.
 
 ### Testing
 
 ```bash
-curl http://<master-ip>:52415/v1/chat/completions \
+curl http://192.168.241.2:2131/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [{"role": "user", "content": "Tell me a joke"}],
