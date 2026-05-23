@@ -115,7 +115,7 @@ class LLamaCppProvider(LLMProvider):
         user_prompt: str,
         schema: dict | None = None,
         temperature: float = 0.0,
-        num_ctx: int = 16384,
+        num_ctx: int = 4096,
         timeout: int = 120,
     ) -> tuple[str, float]:
         url = f"{self.base_url}/v1/chat/completions"
@@ -126,9 +126,8 @@ class LLamaCppProvider(LLMProvider):
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": temperature,
-            "n_ctx": num_ctx,
             "stream": False,
-            "max_tokens": 4096,
+            "max_tokens": 2048,
         }
         if schema:
             body["response_format"] = {

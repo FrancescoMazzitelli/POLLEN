@@ -101,8 +101,12 @@ def invoke_control_unit(query, control_url):
         timeout=300,
     )
     elapsed = time.perf_counter() - t0
-    resp.raise_for_status()
-    return resp.json(), elapsed
+    http_status = resp.status_code
+    try:
+        data = resp.json()
+    except Exception:
+        data = {"error": f"non-json response (HTTP {http_status})", "raw_text": resp.text[:500]}
+    return data, elapsed, http_status
 
 
 def extract_operation_path(task):
@@ -203,11 +207,12 @@ def evaluate_dataset(dataset_name, queries, control_url, max_queries=None):
         print(f"[{idx+1}/{total}] {dataset_name}: {query[:80]}{'...' if len(query) > 80 else ''}")
 
         try:
-            response_data, total_latency = invoke_control_unit(query, control_url)
+            response_data, total_latency, http_status = invoke_control_unit(query, control_url)
         except requests.exceptions.RequestException as e:
             print(f"  ERROR: HTTP request failed — {e}")
             response_data = {"error": str(e)}
             total_latency = 0.0
+            http_status = 0
 
         execution_plan = response_data.get("execution_plan", {})
         execution_results = response_data.get("execution_results", [])
@@ -225,6 +230,7 @@ def evaluate_dataset(dataset_name, queries, control_url, max_queries=None):
             "query": query,
             "oracle": oracle,
             "error": error,
+            "http_status": http_status,
             "planning_latency_s": round(planning_latency, 3),
             "total_latency_s": round(total_latency, 3),
             "planned_count": comparison["num_planned"],
@@ -283,6 +289,15 @@ def compute_aggregate_metrics(results, dataset_name):
     p95_idx = min(int(n * 0.95), n - 1)
     p95_planning = sorted_planning[p95_idx]
 
+    # HTTP status distribution
+    status_counts = {}
+    http_errors = 0
+    for r in results:
+        s = r.get("http_status", 0)
+        status_counts[s] = status_counts.get(s, 0) + 1
+        if s and s >= 400:
+            http_errors += 1
+
     return {
         "dataset": dataset_name,
         "total_queries": total,
@@ -295,6 +310,8 @@ def compute_aggregate_metrics(results, dataset_name):
         "p95_planning_latency_s": round(p95_planning, 3),
         "successful_queries": successful,
         "correct_path_queries": correct_path,
+        "http_status_distribution": {str(k): v for k, v in sorted(status_counts.items())},
+        "http_error_count": http_errors,
     }
 
 
@@ -319,14 +336,14 @@ def write_per_query_csv(results, output_dir):
         writer.writerow([
             "query_index", "query", "oracle_count", "planned_count",
             "delta_sl", "is_correct_path", "tasks_successful",
-            "planning_latency_s", "total_latency_s", "error",
+            "planning_latency_s", "total_latency_s", "http_status", "error",
         ])
         for r in results:
             writer.writerow([
                 r["query_index"], r["query"], r["oracle_count"],
                 r["planned_count"], r["delta_sl"], r["is_correct_path"],
                 r["tasks_successful"], r["planning_latency_s"],
-                r["total_latency_s"], r.get("error", ""),
+                r["total_latency_s"], r.get("http_status", ""), r.get("error", ""),
             ])
     print(f"  Per-query: {path}")
 
@@ -343,10 +360,12 @@ def write_summary(metrics, output_dir, run_label):
         f"  Total queries:       {metrics['total_queries']}",
         f"  Successful (S):      {metrics['successful_queries']}",
         f"  Correct path (CP):   {metrics['correct_path_queries']}",
+        f"  HTTP errors (4xx/5xx): {metrics.get('http_error_count', 0)}",
         "",
         f"  Success Rate (S%):         {metrics['success_rate_s']:.2f}%",
         f"  Correct Path Rate (CP%):   {metrics['correct_path_rate_cp']:.2f}%",
         f"  Avg Δ Solution Length:     {metrics['avg_delta_sl']:.2f}",
+        f"  HTTP Status Distribution:  {metrics.get('http_status_distribution', {})}",
         "",
         "  Latency (planning):",
         f"    Average:  {metrics['avg_planning_latency_s']:.3f} s",

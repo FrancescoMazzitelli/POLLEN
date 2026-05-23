@@ -1,0 +1,1 @@
+sudo nice -n -20 ./dllama-api   --host 0.0.0.0   --port 52415   --model /home/pi/model1/dllama_model_llama3.1_instruct_q40.m   --tokenizer /home/pi/model1/dllama_tokenizer_llama3.1_instruct_q40.t   --buffer-float-type q80   --nthreads 4   --max-seq-len 4096   --workers 192.168.99.164:52415 192.168.99.186:52415 192.168.99.197:52415

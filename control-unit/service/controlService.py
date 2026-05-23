@@ -281,28 +281,15 @@ class Controller:
 
         if backend_mode == "REAL":
             hc12_block = ""
-            self_check_hc12 = (
-                "  \u25a1 Every query param in a GET url is documented in the "
-                "endpoint's parameters list (HC-1)."
-            )
         else:
             hc12_block = """
 
 HC-12  NO AND-COMBINATION OF QUERY PARAMS
-      A GET url MUST NOT carry two or more query parameters in AND (e.g. ?a=x&b=y)
-      unless the endpoint's description EXPLICITLY documents that the combination
-      is supported.
-      Why: mock servers (Microcks) match each parameter in isolation against
-      registered examples. AND-combining two independently-documented parameters
-      returns the first matched example, NOT the intersection — silently
-      producing wrong data.
-      Correct pattern when two independent filters are needed and no single
-      endpoint documents them together: issue ONE GET per filter, combine
-      the results in a terminal SQL task (e.g. JOIN on zoneId, or WHERE IN)."""
-            self_check_hc12 = (
-                "  \u25a1 No GET url combines two or more query params in AND (HC-12) "
-                "\u2014 use one GET per filter + a terminal SQL task."
-            )
+      A GET url MUST NOT carry two+ query params in AND (e.g. ?a=x&b=y)
+      unless the endpoint EXPLICITLY documents the combination.
+      Microcks matches each param in isolation; AND-combining returns the
+      first matched example, NOT the intersection.
+      Fix: issue one GET per filter + terminal SQL task (JOIN/WHERE IN)."""
 
         ex_a = {
             "reasoning": (
@@ -387,110 +374,22 @@ HC-12  NO AND-COMBINATION OF QUERY PARAMS
                 "DECOMPOSE: rank warehouses by avg temp per zone | "
                 "MAP: smart-logistics-mock / GET /warehouse + GET /thermometer | "
                 "CHAIN: SQL joins both on zoneId | "
-                "COMBINE: sql join+aggregate over get_warehouses and get_thermometers | "
+                "COMBINE: sql join+aggregate | "
                 "FILTER: no query params; avg+rank \u2192 SQL | "
-                "VALIDATE: \u2713 table names = task names, \u2713 no {{}} in SQL"
+                "VALIDATE: \u2713 table names = task names"
             ),
             "tasks": [
-                {
-                    "task_name":  "get_warehouses",
-                    "service_id": "smart-logistics-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+Logistics+API/1.0/warehouse",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "get_thermometers",
-                    "service_id": "smart-logistics-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+Logistics+API/1.0/thermometer",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "rank_by_avg_temp",
-                    "service_id": "sql-processor",
-                    "url":        "",
-                    "operation":  "SQL",
-                    "input":      {"sql_query": "SELECT w.id, w.name, w.zoneId, AVG(t.lastReading) AS avg_temp FROM get_warehouses w JOIN get_thermometers t ON w.zoneId = t.zoneId GROUP BY w.id, w.name, w.zoneId ORDER BY avg_temp DESC"}
-                }
-            ]
-        }
-
-        ex_e = {
-            "reasoning": (
-                "DECOMPOSE: available hotels | avoid noisy districts | "
-                "MAP: smart-hospitality-mock / GET /hotel + smart-acoustics-mock / GET /noise-sensor | "
-                "CHAIN: SQL set difference on districtId | "
-                "COMBINE: sql set_difference get_available_hotels minus get_noisy_sensors | "
-                "FILTER: hotel available=true; noise-sensor level=high | "
-                "VALIDATE: \u2713 two GETs + terminating SQL, \u2713 exclusion via NOT IN"
-            ),
-            "tasks": [
-                {
-                    "task_name":  "get_available_hotels",
-                    "service_id": "smart-hospitality-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+Hospitality+API/1.0/hotel?available=true",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "get_noisy_sensors",
-                    "service_id": "smart-acoustics-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+Acoustics+API/1.0/noise-sensor?level=high",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "hotels_in_quiet_districts",
-                    "service_id": "sql-processor",
-                    "url":        "",
-                    "operation":  "SQL",
-                    "input":      {"sql_query": "SELECT * FROM get_available_hotels WHERE districtId NOT IN (SELECT districtId FROM get_noisy_sensors)"}
-                }
-            ]
-        }
-
-        ex_f = {
-            "reasoning": (
-                "DECOMPOSE: find the quietest apartments | "
-                "MAP: smart-real-estate-mock / GET /apartment + smart-acoustics-mock / GET /noise-sensor | "
-                "CHAIN: SQL join and rank | "
-                "COMBINE: sql join get_apartments and get_noise_sensors, order by noise | "
-                "FILTER: user asks for 'quietest' (qualitative). I MUST NOT invent a threshold like '< 40'. I will use ORDER BY decibelLevel ASC LIMIT 3 | "
-                "VALIDATE: \u2713 no invented thresholds, used sorting instead"
-            ),
-            "tasks": [
-                {
-                    "task_name":  "get_apartments",
-                    "service_id": "smart-real-estate-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+Real+Estate+API/1.0/apartment",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "get_noise_sensors",
-                    "service_id": "smart-acoustics-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+Acoustics+API/1.0/noise-sensor",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "quietest_apartments",
-                    "service_id": "sql-processor",
-                    "url":        "",
-                    "operation":  "SQL",
-                    "input":      {"sql_query": "SELECT a.*, n.decibelLevel FROM get_apartments a JOIN get_noise_sensors n ON a.zoneId = n.zoneId ORDER BY n.decibelLevel ASC LIMIT 3"}
-                }
+                {"task_name": "get_warehouses",      "service_id": "smart-logistics-mock", "url": "http://mock-server:8080/rest/Smart+Logistics+API/1.0/warehouse",  "operation": "GET",  "input": ""},
+                {"task_name": "get_thermometers",     "service_id": "smart-logistics-mock", "url": "http://mock-server:8080/rest/Smart+Logistics+API/1.0/thermometer", "operation": "GET",  "input": ""},
+                {"task_name": "rank_by_avg_temp",     "service_id": "sql-processor",        "url": "", "operation": "SQL", "input": {"sql_query": "SELECT w.id, w.name, w.zoneId, AVG(t.lastReading) AS avg_temp FROM get_warehouses w JOIN get_thermometers t ON w.zoneId = t.zoneId GROUP BY w.id, w.name, w.zoneId ORDER BY avg_temp DESC"}}
             ]
         }
 
         examples_str = (
             f"EXAMPLE A \u2014 single GET with enum filter:\n{json.dumps(ex_a, indent=2)}\n\n"
-            f"EXAMPLE B \u2014 GET list \u2192 JMESPath id extraction \u2192 PUT path param:\n{json.dumps(ex_b, indent=2)}\n\n"
-            f"EXAMPLE C \u2014 GET with filter \u2192 collect zoneIds \u2192 multi-zone GET:\n{json.dumps(ex_c, indent=2)}\n\n"
-            f"EXAMPLE D \u2014 two GETs \u2192 SQL join/rank/aggregate:\n{json.dumps(ex_d, indent=2)}\n\n"
-            f"EXAMPLE E \u2014 two GETs \u2192 SQL set difference (exclusion):\n{json.dumps(ex_e, indent=2)}\n\n"
-            f"EXAMPLE F \u2014 Qualitative constraint \u2192 SQL Sort (NO magic numbers):\n{json.dumps(ex_f, indent=2)}"
+            f"EXAMPLE B \u2014 GET \u2192 JMESPath \u2192 PUT:\n{json.dumps(ex_b, indent=2)}\n\n"
+            f"EXAMPLE C \u2014 two GETs \u2192 JMESPath join:\n{json.dumps(ex_c, indent=2)}\n\n"
+            f"EXAMPLE D \u2014 two GETs \u2192 SQL join/rank:\n{json.dumps(ex_d, indent=2)}"
         )
 
         return f"""<role>
@@ -603,88 +502,30 @@ HC-10  NO INVENTED THRESHOLDS
       enum fields (e.g. alertActive=false, status='ok').
 
 HC-11  JMESPATH IS URL/INPUT SUBSTITUTION ONLY
-      JMESPath placeholders {{{{task<expr>}}}} serve EXACTLY ONE purpose: injecting
-      values from a prior task's result into the url or input of a subsequent
-      HTTP task. This is the CHAIN mechanism \u2014 valid and expected across any
-      number of chained HTTP tasks (see Examples B, C).
-
-      JMESPath is NOT a result-combination mechanism. Use an SQL terminal task
-      when the final answer requires ANY of the following over prior results:
-        - merging rows from TWO OR MORE task results (join, set intersect/diff)
-        - aggregation (sum, avg, count, min, max, group by)
-        - ranking or sorting across a dataset (order by + limit)
-        - post-filtering a single task when the HTTP API could not filter it
-          server-side
-
-      Therefore: min_by, max_by, sort_by MUST NOT appear inside {{{{...}}}} \u2014
-      express them as SQL (ORDER BY ... LIMIT, MIN, MAX, GROUP BY) in a
-      terminal SQL task.
-
-      Quick decision table:
-        one GET, API does it all                    \u2192 COMBINE "single task",   no SQL
-        GET \u2192 GET/POST/PUT/DELETE via JMESPath url  \u2192 COMBINE "chain: ...",    no SQL
-        two+ GETs whose results must be merged      \u2192 COMBINE "sql ...",       last task SQL
-        one GET + post-aggregation/ranking          \u2192 COMBINE "sql ...",       last task SQL{hc12_block}
+      Use {{{{task<expr>}}}} ONLY to inject prior task results into url/input.
+      JMESPath is NOT for combining/aggregating results. Rule of thumb:
+        single task                    \u2192 COMBINE "single task"
+        GET\u2192GET/PUT/DELETE via JMESPath  \u2192 COMBINE "chain"
+        merging/aggregation needed     \u2192 last task is SQL{hc12_block}
 </hard_constraints>
 
 <soft_constraints>
 SC-1  MULTI-ZONE QUERIES
-      When an endpoint's description documents a ?zoneIds= parameter for multi-zone queries,
-      pass zones from a prior task as: ?zoneIds={{{{prev[*].zoneId | join(',', @)}}}}
+      Pass zones from a prior task as: ?zoneIds={{{{prev[*].zoneId | join(',', @)}}}}
 
 SC-2  PATH PARAMETER INJECTION
-      Inject ids and keys directly into the url string using chaining syntax.
-      Never put them in the input field.
+      Inject ids into url using chaining syntax, never in the input field.
 </soft_constraints>
 
-<self_check>
-Before writing the final JSON, verify every item below:
-
-  \u25a1 Every service_id is copied verbatim from the catalog's SERVICE_ID field.
-  \u25a1 Every endpoint path is copied verbatim from the catalog.
-  \u25a1 Every parameter name is copied verbatim from the catalog (no guessing synonyms).
-  \u25a1 No url contains bare {{...}} unless it is a valid chaining expression {{{{task<expr>}}}}.
-{self_check_hc12}
-  \u25a1 All required (*) parameters are present in every url.
-  \u25a1 No two tasks call the same url+service.
-  \u25a1 SQL tasks have url="" and input={{"sql_query":"..."}}.
-  \u25a1 Non-SQL tasks have a non-empty url starting with http://.
-  \u25a1 COMBINE phase matches tasks:
-      "single task" \u2192 exactly 1 task.
-      "chain: ..."  \u2192 N HTTP tasks; last task's url or input contains {{...}}; no SQL.
-      "sql ..."     \u2192 last task is SQL.
-  \u25a1 If any catalog lookup failed in PHASE 2, tasks is an empty array [].
-</self_check>
-
 <jmespath_reference>
-JMESPath serves ONE purpose: inject values from a prior task's result into the
-url or input of a subsequent HTTP task. Syntax: {{{{task_name<expr>}}}}.
+Syntax: {{{{task_name<expr>}}}}. Three canonical patterns:
 
-Three canonical patterns \u2014 nothing else is permitted inside {{{{...}}}}:
+  1. Single value:   {{{{t[?k=='v'] | [0].field}}}}
+  2. Array:          {{{{t[*].field}}}}
+  3. Joined string:  {{{{t[*].field | join(',', @)}}}}
 
-  1. Single value  (filter + pick first):  {{{{t[?k=='v'] | [0].field}}}}     \u2190 pipe required
-  2. All values    (array):                 {{{{t[*].field}}}}
-  3. Joined string (comma-joined):          {{{{t[*].field | join(',', @)}}}} \u2190 string fields only
-
-Pattern 1 is combinable with any filter expression; pattern 3 accepts an
-optional filter before the pipe: {{{{t[?k=='v'].field | join(',', @)}}}}.
-
-Filter expressions inside [?...]:
-  operators  ==  !=  <  >  <=  >=  &&  ||
-  functions  contains(field, 'text')
-  literals   'strings'   `numbers`   `true`   `false`   `null`
-
-Examples of valid filters (plug into pattern 1 or 3):
-  [?status=='open']                 [?alertActive==`true`]
-  [?price<`100`]                    [?contains(name, 'Rossi')]
-  [?a=='x' || a=='y']               [?field==`null`]
-
-CRITICAL RULES:
-  - join(',', @) works ONLY on string fields. Never on integers or arrays.
-  - [?k=='v'] | [0].field \u2014 the pipe is mandatory to extract a single value.
-  - Ranking, sorting, aggregation, grouping, and combining two prior tasks
-    are ALWAYS SQL \u2014 never JMESPath. min_by, max_by, sort_by MUST NOT
-    appear inside {{{{...}}}}. Use SQL's ORDER BY, LIMIT, MIN, MAX, GROUP BY.
+Filter operators inside [?...]: == != < > <= >= && ||  contains(field, 'text')
+join works ONLY on string fields. Ranking/aggregation/combin ing two tasks = SQL.
 </jmespath_reference>
 
 <examples>
@@ -695,20 +536,15 @@ Apply the principle to any domain \u2014 do not imitate the specific services or
 </examples>
 
 <sql_reference>
-SQL tasks use DuckDB dialect. Reference prior task results by task_name as table name.
-Never use {{{{}}}} placeholders inside the sql_query string.
-NEVER use SQL reserved words as task_name (e.g. order, group, select, index, table, user).
+DuckDB dialect. Reference prior task results by task_name as table name.
+No {{{{}}}} inside sql_query. No SQL reserved words as task_name.
 
 Common patterns:
-  Post-filter:    SELECT * FROM t WHERE field = 'value'
-                  SELECT col1, col2 FROM t WHERE cond1 AND cond2
-  Sort + top-N:   SELECT * FROM t ORDER BY field ASC LIMIT 1
-                  SELECT * FROM t ORDER BY field DESC LIMIT 1
-                  SELECT * FROM t ORDER BY field ASC LIMIT N
-  Aggregate:      SELECT MIN(field), MAX(field), AVG(field) FROM t
-  Join:           SELECT a.*, b.field FROM task_a a JOIN task_b b ON a.zoneId = b.zoneId
-  Intersect:      SELECT * FROM task_a WHERE zoneId IN (SELECT zoneId FROM task_b WHERE cond)
-  Difference:     SELECT * FROM task_a WHERE zoneId NOT IN (SELECT zoneId FROM task_b)
+  Post-filter:   SELECT * FROM t WHERE field = 'value'
+  Sort + top-N:  SELECT * FROM t ORDER BY field ASC|DESC LIMIT N
+  Aggregate:     SELECT MIN|MAX|AVG|COUNT(field) FROM t
+  Join:          SELECT a.*, b.field FROM ta a JOIN tb b ON a.zoneId = b.zoneId
+  Set diff:      SELECT * FROM ta WHERE id NOT IN (SELECT id FROM tb)
 </sql_reference>"""
 
     def _build_user_prompt(self, discovered_services, discovered_capabilities,
@@ -1252,6 +1088,45 @@ QUERY:
             disc_params.append(s.get("parameters", {}))
 
         disc_eps = self.replace_endpoints(disc_eps, mock_url)
+
+        # ---- Token budget: trim catalog to fit model context -----------------
+        planner_ctx = int(os.environ.get("PLANNER_CTX_LENGTH", "4096"))
+        base_prompt = self._build_system_prompt(self.backend_mode)
+
+        def _est_tok(text: str) -> int:
+            return len(text) // 4
+
+        base_tok = _est_tok(base_prompt) + _est_tok(f"\nFILES:\nnone\n\nQUERY:\n{query}\n")
+        margin = int(planner_ctx * 0.85)
+
+        def _svc_tok(i: int) -> int:
+            c = len(str(disc_services[i].get("_id", ""))) + len(str(disc_services[i].get("name", "")))
+            caps = disc_caps[i] if i < len(disc_caps) else {}
+            for k in caps:
+                if k == "POST /register":
+                    continue
+                c += len(k) + len(str(disc_eps[i].get(k, ""))) + len(str(caps[k]))
+                c += len(str(disc_params[i].get(k, ""))) if i < len(disc_params) else 0
+                c += len(str(disc_schemas[i].get(k, ""))) if i < len(disc_schemas) else 0
+                c += len(str(disc_req_schemas[i].get(k, ""))) if i < len(disc_req_schemas) else 0
+            return c
+
+        total_est = base_tok + sum(_svc_tok(i) for i in range(len(disc_services)))
+        if total_est > margin:
+            print(f"[BUDGET] Est. {total_est} tok > {margin} (85% ctx) — trimming")
+            keep, acc = [], base_tok
+            for i in range(len(disc_services)):
+                t = _svc_tok(i)
+                if acc + t <= margin:
+                    acc += t
+                    keep.append(i)
+            print(f"[BUDGET] Keeping {len(keep)}/{len(disc_services)} services ({acc} est. tok)")
+            disc_services = [disc_services[i] for i in keep]
+            disc_caps = [disc_caps[i] for i in keep]
+            disc_eps = [disc_eps[i] for i in keep]
+            disc_schemas = [disc_schemas[i] for i in keep]
+            disc_req_schemas = [disc_req_schemas[i] for i in keep]
+            disc_params = [disc_params[i] for i in keep]
 
         plan_json, latency = self.decompose_task(
             disc_services, disc_caps, disc_eps,

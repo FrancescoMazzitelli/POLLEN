@@ -4,3 +4,4 @@ pymongo==4.15.3
 qdrant_client==1.15.1
 sentence-transformers==5.4.1
 optimum[onnxruntime]==2.1.0
+requests==2.32.3

@@ -52,15 +52,20 @@ QDRANT_URI              = f"http://{QDRANT_HOST}:{QDRANT_PORT}"
 
 # -- LLM query decomposition (optional) -----------------------------------------
 # If USE_LLM_DECOMPOSITION=true, the query is decomposed into atomic
-# sub-queries via an LLM (default glm-4.7-flash via Ollama) before Stage 1.
+# sub-queries via an LLM before Stage 1.
+# Supports two backends:
+#   - "llamacpp" (default): OpenAI-compatible API (Distributed-Llama / llama.cpp)
+#   - "ollama":             Ollama /api/chat endpoint
 # Each sub-query produces its own top-K set; the deduplicated union becomes
 # the input for Stage 2. On error, it falls back to the original query as a
 # single sub-query -- the system never breaks.
-USE_LLM_DECOMPOSITION  = os.environ.get("USE_LLM_DECOMPOSITION", "true").lower() == "true"
-OLLAMA_URL             = os.environ.get("OLLAMA_URL", "http://ollama:11434")
-DECOMPOSITION_MODEL    = os.environ.get("DECOMPOSITION_MODEL", "glm-4.7-flash:q4_K_M")
-DECOMPOSITION_TIMEOUT  = int(os.environ.get("DECOMPOSITION_TIMEOUT", "15"))
-DECOMPOSITION_MAX_SUBQ = int(os.environ.get("DECOMPOSITION_MAX_SUBQ", "4"))
+USE_LLM_DECOMPOSITION     = os.environ.get("USE_LLM_DECOMPOSITION", "true").lower() == "true"
+DECOMPOSITION_BACKEND     = os.environ.get("DECOMPOSITION_BACKEND", "llamacpp")
+OLLAMA_URL                = os.environ.get("OLLAMA_URL", "http://localhost:52415")
+
+# Model context limit from dllama-api --max-seq-len (see dllama_command_4.txt)
+DECOMPOSITION_CTX_LENGTH  = int(os.environ.get("DECOMPOSITION_CTX_LENGTH", "4096"))
+DECOMPOSITION_MAX_SUBQ    = int(os.environ.get("DECOMPOSITION_MAX_SUBQ", "4"))
 
 mongo_client = MongoClient(MONGO_URI)
 qdrant_client = QdrantClient(QDRANT_URI)
@@ -252,7 +257,7 @@ Given a user query, decompose it into atomic information needs.
 Each sub-query targets ONE type of information that can be satisfied by a single type of API/service.
 
 RULES:
-- Output 1 to 4 sub-queries.
+- Output 1 to {max_subq} sub-queries.
 - If the query asks for ONE type of information, output exactly one sub-query.
 - Each sub-query is a short noun phrase (2-6 words), describing the resource/data type.
 - Strip references to specific entities, locations, filters, conditions -- keep only the resource type.
@@ -262,16 +267,16 @@ RULES:
 
 EXAMPLES:
 Input: "list all temperature sensors"
-Output: {"sub_queries": ["temperature sensors"]}
+Output: {{"sub_queries": ["temperature sensors"]}}
 
 Input: "find car parks near Arco di Traiano with charging stations nearby"
-Output: {"sub_queries": ["parking spots", "tourist attractions", "charging stations"]}
+Output: {{"sub_queries": ["parking spots", "tourist attractions", "charging stations"]}}
 
 Input: "show me air quality in zones with heavy traffic"
-Output: {"sub_queries": ["air quality measurements", "traffic data by zone"]}
+Output: {{"sub_queries": ["air quality measurements", "traffic data by zone"]}}
 
 Input: "create a new user account"
-Output: {"sub_queries": ["user account management"]}
+Output: {{"sub_queries": ["user account management"]}}
 """
 
 DECOMPOSITION_SCHEMA = {
@@ -288,9 +293,43 @@ DECOMPOSITION_SCHEMA = {
 }
 
 
+# The model name sent to dllama-api is ignored by the server.
+_OLLAMA_MODEL  = os.environ.get("DECOMPOSITION_MODEL", "model")
+_LLAMACPP_MODEL = "default"
+
+
+def _extract_json(text: str) -> str:
+    """Extract JSON object from text that may contain markdown fences."""
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        start = 0
+        for i, line in enumerate(lines):
+            if line.strip().startswith("```"):
+                start = i + 1
+                break
+        end = len(lines)
+        for i in range(len(lines) - 1, start - 1, -1):
+            if lines[i].strip().startswith("```"):
+                end = i
+                break
+        text = "\n".join(lines[start:end]).strip()
+    # find first { and last }
+    s = text.find("{")
+    e = text.rfind("}")
+    if s != -1 and e > s:
+        return text[s : e + 1]
+    return text
+
+
+_DECOMPOSITION_TIMEOUT = 60
+_DECOMPOSITION_MAX_TOKENS = 128
+
+
 def decompose_query(query_text: str) -> tuple[list, dict]:
     """
     Decomposes the query into atomic sub-queries via LLM.
+    Supports llamacpp (OpenAI-compatible) and Ollama backends.
 
     Returns:
         (sub_queries, meta) where meta contains:
@@ -301,57 +340,137 @@ def decompose_query(query_text: str) -> tuple[list, dict]:
     if not USE_LLM_DECOMPOSITION:
         return [query_text], {"source": "disabled", "latency_ms": 0, "reason": None}
 
-    payload = {
-        "model": DECOMPOSITION_MODEL,
-        "messages": [
-            {"role": "system", "content": DECOMPOSITION_SYSTEM_PROMPT},
-            {"role": "user",   "content": query_text},
-        ],
-        "format": DECOMPOSITION_SCHEMA,
-        "options": {
-            "temperature": 0.0,
-            "num_predict": 200,
-        },
-        "think":  False,
-        "stream": False,
-    }
+    logger.info(
+        f"[DECOMPOSE] backend={DECOMPOSITION_BACKEND} ctx_limit={DECOMPOSITION_CTX_LENGTH}"
+    )
 
     t0 = time.perf_counter()
-    try:
-        resp = requests.post(
-            f"{OLLAMA_URL}/api/chat",
-            json=payload,
-            timeout=DECOMPOSITION_TIMEOUT,
-        )
-        resp.raise_for_status()
-        latency_ms = int((time.perf_counter() - t0) * 1000)
 
-        content = resp.json().get("message", {}).get("content", "")
-        parsed  = json.loads(content)
-        sub_queries = parsed.get("sub_queries", [])
+    if DECOMPOSITION_BACKEND == "llamacpp":
+        # ---- llama.cpp / Distributed-Llama (OpenAI-compatible) ----
+        system_prompt = DECOMPOSITION_SYSTEM_PROMPT.format(max_subq=DECOMPOSITION_MAX_SUBQ)
+        payload = {
+            "model": _LLAMACPP_MODEL,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": query_text},
+            ],
+            "temperature": 0.0,
+            "max_tokens":  _DECOMPOSITION_MAX_TOKENS,
+            "stream":      False,
+        }
+        if DECOMPOSITION_SCHEMA:
+            payload["response_format"] = {
+                "type": "json_schema",
+                "schema": DECOMPOSITION_SCHEMA,
+            }
 
-        # Sanitize: strip, dedupe (case-insensitive), drop empty, cap at MAX_SUBQ
-        seen, clean = set(), []
-        for sq in sub_queries:
-            sq = (sq or "").strip()
-            if not sq or sq.lower() in seen:
-                continue
-            seen.add(sq.lower())
-            clean.append(sq)
-        clean = clean[:DECOMPOSITION_MAX_SUBQ]
+        try:
+            resp = requests.post(
+                f"{OLLAMA_URL}/v1/chat/completions",
+                json=payload,
+                timeout=_DECOMPOSITION_TIMEOUT,
+            )
+            resp.raise_for_status()
+            latency_ms = int((time.perf_counter() - t0) * 1000)
 
-        if not clean:
+            data = resp.json()
+            content = data["choices"][0]["message"]["content"].strip()
+
+            if not content:
+                logger.warning("[DECOMPOSE] Empty response from llamacpp")
+                return [query_text], {"source": "fallback",
+                                      "latency_ms": latency_ms,
+                                      "reason": "empty_response"}
+
+            finish_reason = data["choices"][0].get("finish_reason", "")
+            if finish_reason == "length":
+                logger.warning("[DECOMPOSE] Response truncated (finish_reason=length)")
+
+            extracted = _extract_json(content)
+            parsed = json.loads(extracted)
+            sub_queries = parsed.get("sub_queries", [])
+
+            seen, clean = set(), []
+            for sq in sub_queries:
+                sq = (sq or "").strip()
+                if not sq or sq.lower() in seen:
+                    continue
+                seen.add(sq.lower())
+                clean.append(sq)
+            clean = clean[:DECOMPOSITION_MAX_SUBQ]
+
+            if not clean:
+                return [query_text], {"source": "fallback",
+                                      "latency_ms": latency_ms,
+                                      "reason": "empty_sub_queries"}
+
+            return clean, {"source": "llm", "latency_ms": latency_ms, "reason": None}
+
+        except (requests.exceptions.RequestException,
+                json.JSONDecodeError, ValueError, KeyError, IndexError) as e:
+            logger.warning(f"[DECOMPOSE] llamacpp error: {type(e).__name__}: {e}")
             return [query_text], {"source": "fallback",
-                                  "latency_ms": latency_ms,
-                                  "reason": "empty_sub_queries"}
+                                  "latency_ms": int((time.perf_counter() - t0) * 1000),
+                                  "reason": type(e).__name__}
 
-        return clean, {"source": "llm", "latency_ms": latency_ms, "reason": None}
+    else:
+        # ---- Ollama backend ----
+        payload = {
+            "model": _OLLAMA_MODEL,
+            "messages": [
+                {"role": "system", "content": DECOMPOSITION_SYSTEM_PROMPT.format(max_subq=DECOMPOSITION_MAX_SUBQ)},
+                {"role": "user",   "content": query_text},
+            ],
+            "format": DECOMPOSITION_SCHEMA,
+            "options": {
+                "temperature": 0.0,
+                "num_predict": _DECOMPOSITION_MAX_TOKENS,
+            },
+            "think":  False,
+            "stream": False,
+        }
 
-    except (requests.exceptions.RequestException,
-            json.JSONDecodeError, ValueError, KeyError) as e:
-        return [query_text], {"source": "fallback",
-                              "latency_ms": int((time.perf_counter() - t0) * 1000),
-                              "reason": type(e).__name__}
+        try:
+            resp = requests.post(
+                f"{OLLAMA_URL}/api/chat",
+                json=payload,
+                timeout=_DECOMPOSITION_TIMEOUT,
+            )
+            resp.raise_for_status()
+            latency_ms = int((time.perf_counter() - t0) * 1000)
+
+            content = resp.json().get("message", {}).get("content", "")
+            if not content:
+                logger.warning("[DECOMPOSE] Empty response from Ollama")
+                return [query_text], {"source": "fallback",
+                                      "latency_ms": latency_ms,
+                                      "reason": "empty_response"}
+
+            parsed  = json.loads(content)
+            sub_queries = parsed.get("sub_queries", [])
+
+            seen, clean = set(), []
+            for sq in sub_queries:
+                sq = (sq or "").strip()
+                if not sq or sq.lower() in seen:
+                    continue
+                seen.add(sq.lower())
+                clean.append(sq)
+            clean = clean[:DECOMPOSITION_MAX_SUBQ]
+
+            if not clean:
+                return [query_text], {"source": "fallback",
+                                      "latency_ms": latency_ms,
+                                      "reason": "empty_sub_queries"}
+
+            return clean, {"source": "llm", "latency_ms": latency_ms, "reason": None}
+
+        except (requests.exceptions.RequestException,
+                json.JSONDecodeError, ValueError, KeyError) as e:
+            return [query_text], {"source": "fallback",
+                                  "latency_ms": int((time.perf_counter() - t0) * 1000),
+                                  "reason": type(e).__name__}
 
 
 def create_vector_collection():

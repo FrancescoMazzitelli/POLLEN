@@ -146,9 +146,10 @@ services:
       - QDRANT_HOST=${QDRANT_HOST:-catalog-vector}
       - QDRANT_PORT=${QDRANT_PORT:-6333}
       - QDRANT_COLLECTION=${QDRANT_COLLECTION:-services}
-      - OLLAMA_URL=${PETALS_ENDPOINT:-http://localhost:11434}
-      - DECOMPOSITION_MODEL=${DECOMPOSITION_MODEL:-qwen3.5:27b}
-      #- USE_LLM_DECOMPOSITION=true
+      - OLLAMA_URL=${MODEL_ENDPOINT:-http://localhost:52415}
+      - DECOMPOSITION_BACKEND=${DECOMPOSITION_BACKEND:-llamacpp}
+      - DECOMPOSITION_CTX_LENGTH=${DECOMPOSITION_CTX_LENGTH:-4096}
+      - DECOMPOSITION_MAX_SUBQ=${DECOMPOSITION_MAX_SUBQ:-4}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 15s
