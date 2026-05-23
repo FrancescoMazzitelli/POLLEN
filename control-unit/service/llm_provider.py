@@ -116,7 +116,7 @@ class LLamaCppProvider(LLMProvider):
         schema: dict | None = None,
         temperature: float = 0.0,
         num_ctx: int = 4096,
-        timeout: int = 120,
+        timeout: int | None = None,
     ) -> tuple[str, float]:
         url = f"{self.base_url}/v1/chat/completions"
         body = {
@@ -129,11 +129,6 @@ class LLamaCppProvider(LLMProvider):
             "stream": False,
             "max_tokens": 2048,
         }
-        if schema:
-            body["response_format"] = {
-                "type": "json_schema",
-                "schema": schema,
-            }
 
         t0 = time.perf_counter()
         try:

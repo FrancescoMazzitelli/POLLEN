@@ -98,7 +98,7 @@ def invoke_control_unit(query, control_url):
     resp = requests.post(
         f"{control_url}/api/control/invoke",
         json=payload,
-        timeout=300,
+        timeout=None,
     )
     elapsed = time.perf_counter() - t0
     http_status = resp.status_code

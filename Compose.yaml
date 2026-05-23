@@ -174,8 +174,10 @@ services:
     environment:
       - REGISTRY_URL=http://${REGISTRY_HOST:-registry}:${CONSUL_PORT:-8500}
       - CATALOG_URL=http://${CATALOG_GATEWAY_HOST:-catalog-gateway}:${CATALOG_GATEWAY_PORT:-5000}
-      - OLLAMA_API_URL=${MODEL_ENDPOINT:-http://localhost:11434}
+      - LLM_API_URL=${MODEL_ENDPOINT:-http://localhost:11434}
+      - LLM_BACKEND=${LLM_BACKEND:-llamacpp}
       - LLM_MODEL=${LLM_MODEL:-qwen3.5:27b}
+      - PLANNER_CTX_LENGTH=${PLANNER_CTX_LENGTH:-4096}
       - MOCK_SERVER_URL=http://${MOCK_SERVER_HOST:-mock-server}:${MOCK_SERVER_PORT:-8080}
       - BACKEND_MODE=${BACKEND_MODE:-MOCK}
       - API_AUTH_HEADERS=${API_AUTH_HEADERS:-}

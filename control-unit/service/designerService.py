@@ -345,7 +345,7 @@ Classify and, if the category is OUT_OF_DOMAIN, design the missing service."""
         try:
             raw, latency = self.llm.chat(
                 system_prompt, user_prompt, output_schema,
-                temperature=0.2, num_ctx=8192, timeout=60,
+                temperature=0.2, num_ctx=8192, timeout=None,
             )
             print(f"[LATENCY] Designer analyze completed in {latency:.2f}s")
 

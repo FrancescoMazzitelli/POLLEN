@@ -322,7 +322,7 @@ def _extract_json(text: str) -> str:
     return text
 
 
-_DECOMPOSITION_TIMEOUT = 60
+_DECOMPOSITION_TIMEOUT = None
 _DECOMPOSITION_MAX_TOKENS = 128
 
 
@@ -359,12 +359,6 @@ def decompose_query(query_text: str) -> tuple[list, dict]:
             "max_tokens":  _DECOMPOSITION_MAX_TOKENS,
             "stream":      False,
         }
-        if DECOMPOSITION_SCHEMA:
-            payload["response_format"] = {
-                "type": "json_schema",
-                "schema": DECOMPOSITION_SCHEMA,
-            }
-
         try:
             resp = requests.post(
                 f"{OLLAMA_URL}/v1/chat/completions",
