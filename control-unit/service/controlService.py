@@ -342,54 +342,9 @@ HC-12  NO AND-COMBINATION OF QUERY PARAMS
             ]
         }
 
-        ex_c = {
-            "reasoning": (
-                "DECOMPOSE: canteens near occupied halls | "
-                "MAP: smart-campus-mock / GET /lecture-hall + GET /canteen | "
-                "CHAIN: canteen?zoneIds \u2190 get_occupied_halls[*].zoneId | join(\',\',@) | "
-                "COMBINE: chain: get_canteens_near_halls consumes get_occupied_halls via JMESPath | "
-                "FILTER: lecture-hall \u2192 status=occupied; canteen \u2192 zoneIds param documented | "
-                "VALIDATE: \u2713 join on string field, \u2713 zoneIds in catalog"
-            ),
-            "tasks": [
-                {
-                    "task_name":  "get_occupied_halls",
-                    "service_id": "smart-campus-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+University+Campus+API/1.0/lecture-hall?status=occupied",
-                    "operation":  "GET",
-                    "input":      ""
-                },
-                {
-                    "task_name":  "get_canteens_near_halls",
-                    "service_id": "smart-campus-mock",
-                    "url":        "http://mock-server:8080/rest/Smart+University+Campus+API/1.0/canteen?zoneIds={{get_occupied_halls[*].zoneId | join(',', @)}}",
-                    "operation":  "GET",
-                    "input":      ""
-                }
-            ]
-        }
-
-        ex_d = {
-            "reasoning": (
-                "DECOMPOSE: rank warehouses by avg temp per zone | "
-                "MAP: smart-logistics-mock / GET /warehouse + GET /thermometer | "
-                "CHAIN: SQL joins both on zoneId | "
-                "COMBINE: sql join+aggregate | "
-                "FILTER: no query params; avg+rank \u2192 SQL | "
-                "VALIDATE: \u2713 table names = task names"
-            ),
-            "tasks": [
-                {"task_name": "get_warehouses",      "service_id": "smart-logistics-mock", "url": "http://mock-server:8080/rest/Smart+Logistics+API/1.0/warehouse",  "operation": "GET",  "input": ""},
-                {"task_name": "get_thermometers",     "service_id": "smart-logistics-mock", "url": "http://mock-server:8080/rest/Smart+Logistics+API/1.0/thermometer", "operation": "GET",  "input": ""},
-                {"task_name": "rank_by_avg_temp",     "service_id": "sql-processor",        "url": "", "operation": "SQL", "input": {"sql_query": "SELECT w.id, w.name, w.zoneId, AVG(t.lastReading) AS avg_temp FROM get_warehouses w JOIN get_thermometers t ON w.zoneId = t.zoneId GROUP BY w.id, w.name, w.zoneId ORDER BY avg_temp DESC"}}
-            ]
-        }
-
         examples_str = (
             f"EXAMPLE A \u2014 single GET with enum filter:\n{json.dumps(ex_a, indent=2)}\n\n"
-            f"EXAMPLE B \u2014 GET \u2192 JMESPath \u2192 PUT:\n{json.dumps(ex_b, indent=2)}\n\n"
-            f"EXAMPLE C \u2014 two GETs \u2192 JMESPath join:\n{json.dumps(ex_c, indent=2)}\n\n"
-            f"EXAMPLE D \u2014 two GETs \u2192 SQL join/rank:\n{json.dumps(ex_d, indent=2)}"
+            f"EXAMPLE B \u2014 GET \u2192 JMESPath \u2192 PUT:\n{json.dumps(ex_b, indent=2)}"
         )
 
         return f"""<role>
