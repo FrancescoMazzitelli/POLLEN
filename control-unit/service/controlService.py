@@ -282,32 +282,7 @@ class Controller:
         if backend_mode == "REAL":
             hc12_block = ""
         else:
-            hc12_block = """
-
-HC-12  NO AND-COMBINATION OF QUERY PARAMS
-      A GET url MUST NOT carry two+ query params in AND (e.g. ?a=x&b=y)
-      unless the endpoint EXPLICITLY documents the combination.
-      Microcks matches each param in isolation; AND-combining returns the
-      first matched example, NOT the intersection.
-      Fix: issue one GET per filter + terminal SQL task (JOIN/WHERE IN)."""
-
-        ex_a = {
-            "reasoning": (
-                "DECOMPOSE: available books | "
-                "MAP: smart-library-mock / GET /book | "
-                "CHAIN: none | "
-                "COMBINE: single task | "
-                "FILTER: status=available (one param, catalog enum) | "
-                "VALIDATE: \u2713"
-            ),
-            "tasks": [{
-                "task_name":  "get_available_books",
-                "service_id": "smart-library-mock",
-                "url":        "http://mock-server:8080/rest/Smart+Library+Management+API/1.0/book?status=available",
-                "operation":  "GET",
-                "input":      ""
-            }]
-        }
+            hc12_block = "\nHC-12 no AND-combined GET params (?a=x&b=y). Microcks matches each param alone."
 
         ex_b = {
             "reasoning": (
@@ -343,164 +318,45 @@ HC-12  NO AND-COMBINATION OF QUERY PARAMS
         }
 
         examples_str = (
-            f"EXAMPLE A \u2014 single GET with enum filter:\n{json.dumps(ex_a, indent=2)}\n\n"
-            f"EXAMPLE B \u2014 GET \u2192 JMESPath \u2192 PUT:\n{json.dumps(ex_b, indent=2)}"
+            f"EXAMPLE chain:\n{json.dumps(ex_b, separators=(',', ':'))}"
         )
 
         return f"""<role>
-You are an API orchestrator for a distributed system.
-Given a user query and a service catalog, produce ONLY a valid JSON execution plan.
+Output ONLY a JSON execution plan. Schema: {{"reasoning": "string", "tasks": [{{task_name, service_id, url, operation, input}}]}}
+Zero prose, zero fences. Constraint phrases (without X, near Z, ...) need a GET task.
+If impossible: {{"reasoning": "No available service can fulfil this request.", "tasks": []}}
 </role>
 
-<output_contract>
-- Output ONLY raw JSON. Zero prose, zero markdown fences, nothing outside the JSON object.
-- Top-level schema: {{"reasoning": "string", "tasks": [...]}}
-- Every task must have exactly these five keys: task_name, service_id, url, operation, input.
-- CONSTRAINT RULE: Before building the plan, scan the full query for constraint
-  phrases ("without X", "avoiding Y", "where Z is [condition]", "near Z",
-  "somewhere [adjective]"). Each constraint implies a real-time data requirement.
-  Find the service in the catalog that provides that data and add a GET task for it,
-  even if the user did not explicitly ask for that data.
-  A plan that ignores a constraint phrase FAILS validation \u2014 add the missing task
-  before marking VALIDATE as \u2713.
-- If the query cannot be satisfied with the available services from the catalog, output:
-  {{"reasoning": "No available service can fulfil this request.", "tasks": []}}
-</output_contract>
+<rules>
+HC-1  Use only catalog services/endpoints/params.
+HC-2  No bare {{{{placeholder}}}}. Use {{{{task<expr>}}}} chaining.
+HC-3  task: task_name, service_id, url, operation, input. service_id = SERVICE_ID from catalog.
+HC-4  Marked * params required in url.
+HC-5  operation: GET|POST|PUT|DELETE|SQL
+HC-6  Non-SQL url starts http://. SQL url is "".
+HC-7  No duplicate url+service calls. Reuse via JMESPath/SQL.
+HC-8  No concatenated placeholders. Use one prior task + JMESPath OR.
+HC-9  Param values from catalog examples/enums, not user query.
+HC-10 No invented thresholds. ORDER BY+LIMIT for extremes, boolean fields for states.
+HC-11 {{{{task<expr>}}}} for injection only, not aggregation. Use SQL for that.{hc12_block}
+</rules>
 
+<reasoning>
+DECOMPOSE: <data> | MAP: <svc/endpoint> | CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok
+Commit once. No wait/but/perhaps.
+</reasoning>
 
-<grounding_rule> 
-The catalog below is the ONLY source of truth for services, endpoints, parameters, and field names.
-Treat it as a closed world: if something is not in the catalog, it does not exist.
-Never invent, guess, or extrapolate service IDs, endpoint paths, parameter names, or field names.
-</grounding_rule>
-
-<reasoning_protocol>
-Write the "reasoning" value BEFORE the tasks array.
-Use CHAIN OF DRAFT format: one line per phase, keywords only, no full sentences.
-
-  DECOMPOSE: <what data is needed>
-  MAP:       <service-id / method endpoint> for each need
-  CHAIN:     how tasks depend on each other, one of:
-              - "none" (independent tasks)
-              - "<target_task>.<slot> \u2190 <source_task><jmespath>" (JMESPath chaining)
-              - "SQL <op> over <source_task>[, <source_task>]" (SQL reference)
-  COMBINE:   <how the final answer is produced \u2014 one of:
-              "single task" /
-              "chain: last task consumes task_X via JMESPath" /
-              "sql filter task_X" /
-              "sql join task_X and task_Y" /
-              "sql set_difference task_X minus task_Y" /
-              "sql set_intersection task_X and task_Y" /
-              "sql aggregate/rank over task_X">
-  FILTER:    <which param per GET, threshold logic if any>
-  VALIDATE:  \u2713 / list any issue found and how it is fixed
-
-COMMIT RULE: write each phase once and move on.
-Do not use "wait", "actually", "or perhaps", "however", "but".
-If the correct interpretation is ambiguous, pick the most literal reading and commit.
-
-COMBINE CONSISTENCY: the value you write for COMBINE must match the tasks array.
-  - "single task"  \u2192 exactly one task.
-  - "chain: ..."   \u2192 N HTTP tasks; the last task's url or input contains a
-                     {{{{...}}}} placeholder; its raw result IS the answer (no SQL).
-  - "sql ..."      \u2192 the LAST task is an SQL task.
-A plan whose tasks don't match the declared COMBINE strategy FAILS validation \u2014
-fix it before writing the JSON.
-</reasoning_protocol>
-
-<hard_constraints>
-These rules are absolute and may never be violated.
-
-HC-1  CLOSED WORLD
-      Use only services, endpoints, parameters, and field names present in the catalog.
-
-HC-2  NO UNRESOLVED PLACEHOLDERS
-      Every url must be fully resolved. {{id}}, {{zoneId}} and similar bare placeholders
-      are forbidden. Use chaining expressions {{{{task<expr>}}}} or literal values only.
-
-HC-3  REQUIRED KEYS
-      Every task must have: task_name, service_id, url, operation, input.
-      service_id must be the exact SERVICE_ID string from the catalog (not the name).
-
-HC-4  REQUIRED PARAMETERS
-      Parameters marked * in the catalog are required and must appear in every url.
-
-HC-5  OPERATION VALUES
-      operation must be exactly one of: GET  POST  PUT  DELETE  SQL
-
-HC-6  URL RULES
-      - Non-SQL tasks: url must start with http:// and be non-empty.
-      - SQL tasks: url must be an empty string "".
-
-HC-7  NO DUPLICATE CALLS
-      Never build a task that calls the same url+service as an earlier task.
-      Reuse earlier results via JMESPath or a SQL task instead.
-
-HC-8  NO CONCATENATED PLACEHOLDERS
-      Never write ?param={{{{task1[*].f | join(',',@)}}}},{{{{task2[*].f | join(',',@)}}}}
-      Collect all needed data in one prior task and filter with a JMESPath OR expression.
-
-HC-9  PARAMETER VALUES FROM CATALOG
-      When setting a query parameter value, copy it verbatim from the catalog's parameter
-      examples or enum list \u2014 never from the user's query text. The user may use different
-      casing, abbreviations, or synonyms. The catalog value is always authoritative.
-      Example: if the catalog shows categoryId example "NARRATIVE" and the user writes
-      "narrative" or "Narrative", use "NARRATIVE".
-
-HC-10  NO INVENTED THRESHOLDS
-    Never invent numeric thresholds in WHERE clauses (e.g. "< 50", "> 100") UNLESS the
-    user explicitly specifies an exact number in their query.
-    If the user asks for qualitative states (e.g. "clean x", "quiet x", "cheap x")
-    without providing numbers:
-    - To find extremes, use an SQL task with ORDER BY field ASC/DESC LIMIT N.
-    - To filter by "good/bad/safe" conditions, use catalog-documented boolean or
-      enum fields (e.g. alertActive=false, status='ok').
-
-HC-11  JMESPATH IS URL/INPUT SUBSTITUTION ONLY
-      Use {{{{task<expr>}}}} ONLY to inject prior task results into url/input.
-      JMESPath is NOT for combining/aggregating results. Rule of thumb:
-        single task                    \u2192 COMBINE "single task"
-        GET\u2192GET/PUT/DELETE via JMESPath  \u2192 COMBINE "chain"
-        merging/aggregation needed     \u2192 last task is SQL{hc12_block}
-</hard_constraints>
-
-<soft_constraints>
-SC-1  MULTI-ZONE QUERIES
-      Pass zones from a prior task as: ?zoneIds={{{{prev[*].zoneId | join(',', @)}}}}
-
-SC-2  PATH PARAMETER INJECTION
-      Inject ids into url using chaining syntax, never in the input field.
-</soft_constraints>
-
-<jmespath_reference>
-Syntax: {{{{task_name<expr>}}}}. Three canonical patterns:
-
-  1. Single value:   {{{{t[?k=='v'] | [0].field}}}}
-  2. Array:          {{{{t[*].field}}}}
-  3. Joined string:  {{{{t[*].field | join(',', @)}}}}
-
-Filter operators inside [?...]: == != < > <= >= && ||  contains(field, 'text')
-join works ONLY on string fields. Ranking/aggregation/combin ing two tasks = SQL.
-</jmespath_reference>
+<JMESPath>
+{{{{task[?k=='v']|[0].field}}}} single | {{{{task[*].field}}}} array | {{{{task[*].field|join(',',@)}}}} joined
+</JMESPath>
 
 <examples>
-Study the WHY comment after each example. It states the abstract principle.
-Apply the principle to any domain \u2014 do not imitate the specific services or field names.
-
 {examples_str}
 </examples>
 
-<sql_reference>
-DuckDB dialect. Reference prior task results by task_name as table name.
-No {{{{}}}} inside sql_query. No SQL reserved words as task_name.
-
-Common patterns:
-  Post-filter:   SELECT * FROM t WHERE field = 'value'
-  Sort + top-N:  SELECT * FROM t ORDER BY field ASC|DESC LIMIT N
-  Aggregate:     SELECT MIN|MAX|AVG|COUNT(field) FROM t
-  Join:          SELECT a.*, b.field FROM ta a JOIN tb b ON a.zoneId = b.zoneId
-  Set diff:      SELECT * FROM ta WHERE id NOT IN (SELECT id FROM tb)
-</sql_reference>"""
+<sql>
+DuckDB. Prior tasks as tables. No {{{{}}}} inside SQL. SELECT/ORDER BY/AVG/COUNT/JOIN on zoneId.
+</sql>"""
 
     def _build_user_prompt(self, discovered_services, discovered_capabilities,
                            discovered_endpoints, discovered_schemas,

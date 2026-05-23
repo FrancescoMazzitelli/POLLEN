@@ -323,7 +323,7 @@ def _extract_json(text: str) -> str:
 
 
 _DECOMPOSITION_TIMEOUT = None
-_DECOMPOSITION_MAX_TOKENS = 128
+_DECOMPOSITION_MAX_TOKENS = 4000
 
 
 def decompose_query(query_text: str) -> tuple[list, dict]:
