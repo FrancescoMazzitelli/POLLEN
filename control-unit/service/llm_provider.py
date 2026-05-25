@@ -127,7 +127,7 @@ class LLamaCppProvider(LLMProvider):
             ],
             "temperature": temperature,
             "stream": False,
-            "max_tokens": 2048,
+            "max_tokens": 4000,
         }
 
         t0 = time.perf_counter()

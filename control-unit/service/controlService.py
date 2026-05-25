@@ -757,7 +757,7 @@ QUERY:
     async def trigger_agents_async(self, agents: dict, discovered_services):
         results = []
         context = {}
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
             for task in agents.get("tasks", []):
                 operation = str(task.get("operation") or "GET").upper()
 
@@ -848,7 +848,7 @@ QUERY:
 
         registry = Discovery(registry_url)
         services = registry.services()
-        service_data = requests.post(f"{catalog_url}/index/search", json={"query": query}).json()
+        service_data = requests.post(f"{catalog_url}/index/search", json={"query": query}, timeout=30).json()
         service_list = service_data.get("results", [])
 
         if not service_list:
@@ -1004,7 +1004,8 @@ QUERY:
                 print("[VALIDATION] Plan unrecoverable \u2014 execution cancelled.")
                 plan["tasks"] = []
 
-        results = self.trigger_agents(plan, disc_services)
+        #results = self.trigger_agents(plan, disc_services) # Disabled for testing: prevents side effects and allows plan validation before execution
+        results = []
 
         if isinstance(results, dict) and results.get("status") == "FILE":
             return Response(results["body"], status=results["status_code"],
