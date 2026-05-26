@@ -848,7 +848,7 @@ QUERY:
 
         registry = Discovery(registry_url)
         services = registry.services()
-        service_data = requests.post(f"{catalog_url}/index/search", json={"query": query}, timeout=30).json()
+        service_data = requests.post(f"{catalog_url}/index/search", json={"query": query}).json()
         service_list = service_data.get("results", [])
 
         if not service_list:

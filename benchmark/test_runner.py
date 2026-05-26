@@ -193,7 +193,7 @@ def compute_delta_sl(planned_count, oracle_count):
     return abs(planned_count - oracle_count)
 
 
-def evaluate_dataset(dataset_name, queries, control_url, max_queries=None):
+def evaluate_dataset(dataset_name, queries, control_url, max_queries=None, output_dir=None):
     if max_queries:
         queries = queries[:max_queries]
 
@@ -258,7 +258,45 @@ def evaluate_dataset(dataset_name, queries, control_url, max_queries=None):
         print(f"  → {status}  planned={comparison['num_planned']} oracle={comparison['num_oracle']} "
               f"ΔSL={delta_sl} latency={planning_latency:.2f}s")
 
+        if output_dir:
+            _save_incremental(results, dataset_name, output_dir)
+
     return results
+
+
+def _save_incremental(results, dataset_name, output_dir):
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    tmp = output_dir / ".responses.tmp"
+    final = output_dir / "responses.json"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    tmp.replace(final)
+
+    tmp = output_dir / ".per_query.tmp"
+    final = output_dir / "per_query.csv"
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "query_index", "query", "oracle_count", "planned_count",
+            "delta_sl", "is_correct_path", "tasks_successful",
+            "planning_latency_s", "total_latency_s", "http_status", "error",
+        ])
+        for r in results:
+            writer.writerow([
+                r["query_index"], r["query"], r["oracle_count"],
+                r["planned_count"], r["delta_sl"], r["is_correct_path"],
+                r["tasks_successful"], r["planning_latency_s"],
+                r["total_latency_s"], r.get("http_status", ""), r.get("error", ""),
+            ])
+    tmp.replace(final)
+
+    metrics = compute_aggregate_metrics(results, dataset_name)
+    tmp = output_dir / ".metrics.tmp"
+    final = output_dir / "metrics.json"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2, ensure_ascii=False)
+    tmp.replace(final)
 
 
 def compute_aggregate_metrics(results, dataset_name):
@@ -399,17 +437,15 @@ def main():
         print(f"  Dataset: {dataset_name} ({len(queries)} queries)")
         print(f"{'=' * 64}")
 
-        results = evaluate_dataset(
-            dataset_name, queries, args.control_url, args.max_queries
-        )
-
         run_label = f"{dataset_name}_{model}_{run_id}"
         if args.output_dir:
             output_dir = Path(args.output_dir)
         else:
             output_dir = RESULTS_DIR / run_label
 
-        output_dir.mkdir(parents=True, exist_ok=True)
+        results = evaluate_dataset(
+            dataset_name, queries, args.control_url, args.max_queries, output_dir
+        )
 
         metrics = compute_aggregate_metrics(results, dataset_name)
         metrics["model"] = model
