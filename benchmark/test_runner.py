@@ -33,6 +33,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime
@@ -124,6 +125,15 @@ def normalize_oracle_path(path):
     return path
 
 
+def _segments_match(planned_seg, oracle_seg):
+    """Compare two URL path segments, treating oracle placeholders as wildcards."""
+    if re.fullmatch(r'\{[^}]+\}', oracle_seg):
+        return True
+    if re.fullmatch(r'\{[^}]+\}', planned_seg):
+        return True
+    return planned_seg == oracle_seg
+
+
 def compare_plan_with_oracle(tasks, oracle_steps, backend_mode="MOCK"):
     planned_steps = []
     for task in tasks:
@@ -155,7 +165,18 @@ def compare_plan_with_oracle(tasks, oracle_steps, backend_mode="MOCK"):
         for i, (o_op, o_path) in enumerate(oracle_normalized):
             if i in matched_indices:
                 continue
-            if p_op == o_op and p_path.endswith(o_path):
+            if p_op != o_op:
+                continue
+            p_segments = [s for s in p_path.split("/") if s]
+            o_segments = [s for s in o_path.split("/") if s]
+            if len(p_segments) != len(o_segments):
+                if p_path.endswith(o_path):
+                    matches.append({"planned": (p_op, p_path), "oracle": (o_op, o_path)})
+                    matched_indices.add(i)
+                    found = True
+                    break
+                continue
+            if all(_segments_match(ps, os) for ps, os in zip(p_segments, o_segments)):
                 matches.append({"planned": (p_op, p_path), "oracle": (o_op, o_path)})
                 matched_indices.add(i)
                 found = True

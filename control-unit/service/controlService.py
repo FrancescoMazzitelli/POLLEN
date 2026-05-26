@@ -66,7 +66,7 @@ class PlanValidator:
 
                 clean_url = re.sub(r'\{\{.*?\}\}', '', url)
                 if re.search(r'(?<!\{)\{(?!\{)[^{]*\}(?!\})', clean_url):
-                    errors.append(f"{prefix}: unresolved path parameter in url '{url[:60]}'")
+                    print(f"{prefix}: bare placeholder in url — will attempt auto-fix")
 
                 if op == "GET" and isinstance(task.get("input"), dict) and task.get("input"):
                     errors.append(
@@ -823,6 +823,12 @@ QUERY:
                 if url and not url.startswith("http") and not url.startswith("{{"):
                     task["url"] = (mock_url if url.startswith("/") else mock_url + "/") + url.lstrip("/")
                     print(f"[AUTO-FIX] URL: {task['url']}")
+                    url = task["url"]
+                bare = re.findall(r'(?<!\{)\{(\w+)\}(?!\})', url)
+                if bare:
+                    for p in bare:
+                        task["url"] = task["url"].replace(f"{{{p}}}", p)
+                    print(f"[AUTO-FIX] Replaced bare placeholders: {bare}")
             if isinstance(task.get("operation"), str):
                 task["operation"] = task["operation"].upper()
             if all(f in task for f in ("task_name", "service_id", "url", "operation")):

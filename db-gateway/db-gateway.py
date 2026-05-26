@@ -537,7 +537,7 @@ def vector_search():
 
     # -- Pipeline parameters ------------------------------------------------------
     STAGE1_K                  = 7
-    TOP_ENDPOINTS_PER_SERVICE = 4
+    TOP_ENDPOINTS_PER_SERVICE = 6
     K_RRF                     = 60   # canonical parameter (Cormack et al., 2009)
 
     # =============================================================================
