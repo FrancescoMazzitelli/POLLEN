@@ -966,6 +966,18 @@ QUERY:
             print("[SCHEMA VALIDATOR] No violations detected.")
 
         if self._empty_plan_detected(plan):
+            if self.backend_mode == "MOCK":
+                print("[ROUTING] Empty plan in MOCK mode — skipping Designer.")
+                return {
+                    "execution_plan":           plan,
+                    "execution_results":        [],
+                    "error":                    "Empty plan (MOCK mode — Designer skipped)",
+                    "empty_plan_category":      "UNKNOWN",
+                    "empty_plan_justification": plan.get("reasoning", ""),
+                    "suggested_api_contracts":  [],
+                    "planning_latency_s":       planning_latency_s,
+                }
+
             print("\n[ROUTING] Empty plan detected. "
                   "Activating Designer (triage + design)...")
             analysis = self.designer.analyze(
