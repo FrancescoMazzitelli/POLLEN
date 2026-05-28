@@ -211,7 +211,7 @@ def is_all_successful(execution_results):
 
 
 def compute_delta_sl(planned_count, oracle_count):
-    return abs(planned_count - oracle_count)
+    return planned_count - oracle_count
 
 
 def evaluate_dataset(dataset_name, queries, control_url, max_queries=None, output_dir=None):
@@ -326,8 +326,9 @@ def compute_aggregate_metrics(results, dataset_name):
         return {
             "dataset": dataset_name,
             "total_queries": 0,
-            "success_rate": 0.0,
-            "correct_path_rate": 0.0,
+            "success_rate_s": 0.0,
+            "correct_path_rate_cp": 0.0,
+            "oracle_step_coverage": 0.0,
             "avg_delta_sl": 0.0,
             "avg_planning_latency_s": 0.0,
             "avg_total_latency_s": 0.0,

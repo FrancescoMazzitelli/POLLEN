@@ -415,12 +415,96 @@ QUERY:
         tasks = plan.get("tasks")
         return isinstance(tasks, list) and len(tasks) == 0
 
+    @staticmethod
+    def repair_json(text: str) -> str | None:
+        s = text.find('{')
+        if s == -1 and text.find('[') != -1:
+            s = text.find('[')
+        if s == -1:
+            return None
+        # Remove trailing text after the last meaningful JSON content
+        # by finding the deepest balanced position
+        depth_brace = 0
+        depth_bracket = 0
+        last_balanced = -1
+        i = s
+        in_str = False
+        while i < len(text):
+            ch = text[i]
+            if ch == '"' and (i == 0 or text[i-1] != '\\'):
+                in_str = not in_str
+            if not in_str:
+                if ch == '{':
+                    depth_brace += 1
+                elif ch == '}':
+                    depth_brace -= 1
+                elif ch == '[':
+                    depth_bracket += 1
+                elif ch == ']':
+                    depth_bracket -= 1
+                if depth_brace == 0 and depth_bracket == 0:
+                    last_balanced = i
+            i += 1
+        if last_balanced == -1 and depth_brace > 0 and depth_bracket >= 0:
+            last_balanced = len(text) - 1
+        if last_balanced == -1:
+            return None
+        candidate = text[s:last_balanced+1]
+        # Remove trailing commas before } or ]
+        candidate = re.sub(r',\s*([}\]])', r'\1', candidate)
+        # Balance braces
+        cb = candidate.count('{') - candidate.count('}')
+        for _ in range(cb):
+            candidate += '}'
+        cb = candidate.count('[') - candidate.count(']')
+        for _ in range(cb):
+            candidate += ']'
+        try:
+            json.loads(candidate)
+            return candidate
+        except json.JSONDecodeError:
+            pass
+        # Try stripping last incomplete key-value pair
+        for sep in (',\s*"[^"]+"\s*:\s*"[^"]*"$', ',\s*"[^"]+"\s*:\s*\{[^}]*$',
+                     ',\s*"[^"]+"\s*:\s*\[[^\]]*$'):
+            stripped = re.sub(sep, '', candidate.rstrip())
+            try:
+                json.loads(stripped)
+                return stripped
+            except json.JSONDecodeError:
+                pass
+        return None
+
     def extract_agents(self, agents_json: str) -> dict:
         def try_parse(text):
-            s, e = text.find('{'), text.rfind('}') + 1
-            if s != -1 and e > s:
+            s = text.find('{')
+            if s == -1 and text.find('[') != -1:
+                s = text.find('[')
+            if s == -1:
+                return None
+            depth = 0
+            i = s
+            in_str = False
+            while i < len(text):
+                ch = text[i]
+                if ch == '"' and (i == 0 or text[i-1] != '\\'):
+                    in_str = not in_str
+                if not in_str:
+                    if ch in ('{', '['):
+                        depth += 1
+                    elif ch in ('}', ']'):
+                        depth -= 1
+                        if depth == 0:
+                            try:
+                                return json.loads(text[s:i+1])
+                            except json.JSONDecodeError:
+                                break
+                i += 1
+            # Depth never reached 0 — try repair
+            repaired = Controller.repair_json(text[s:])
+            if repaired:
                 try:
-                    return json.loads(text[s:e])
+                    return json.loads(repaired)
                 except json.JSONDecodeError:
                     pass
             return None
@@ -438,6 +522,14 @@ QUERY:
             result = try_parse(agents_json[m.end():].strip())
             if result is not None:
                 print("[PARSE] Extracted after </think>.")
+                return result
+
+        # Extract JSON from markdown code blocks (```json ... ``` or ``` ... ```)
+        code_block = re.search(r'```(?:json)?\s*\n?(.*?)```', agents_json, flags=re.DOTALL)
+        if code_block:
+            result = try_parse(code_block.group(1).strip())
+            if result is not None:
+                print("[PARSE] Extracted from markdown code block.")
                 return result
 
         result = try_parse(agents_json)
