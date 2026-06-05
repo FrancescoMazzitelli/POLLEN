@@ -23,5 +23,5 @@
   "macro_f1": 0.3275,
   "global_accuracy": 0.1833,
   "global_jaccard": 0.1833,
-  "source": "results/qwen/spotify-dist4/responses.json"
+  "source": "results/qwen-0-6b/spotify-dist4/responses.json"
 }

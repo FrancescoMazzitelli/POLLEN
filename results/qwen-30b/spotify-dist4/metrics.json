@@ -1,0 +1,27 @@
+{
+  "total_queries": 57,
+  "successful_queries": 23,
+  "correct_path_queries": 26,
+  "success_rate_s_pct": 40.35,
+  "correct_path_rate_cp_pct": 45.61,
+  "avg_delta_sl": 1.12,
+  "avg_planning_latency_s": 1125.516,
+  "avg_total_latency_s": 2061.397,
+  "p50_planning_latency_s": 1009.998,
+  "p95_planning_latency_s": 1994.299,
+  "http_status_distribution": {
+    "200": 57
+  },
+  "total_tp": 55,
+  "total_fp": 155,
+  "total_fn": 91,
+  "micro_precision": 0.2619,
+  "micro_recall": 0.3767,
+  "micro_f1": 0.309,
+  "macro_precision": 0.4561,
+  "macro_recall": 0.4561,
+  "macro_f1": 0.4561,
+  "global_accuracy": 0.1827,
+  "global_jaccard": 0.1827,
+  "source": "results/qwen-30b/spotify-dist4/responses.json"
+}

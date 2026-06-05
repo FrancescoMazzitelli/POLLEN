@@ -1,0 +1,5108 @@
+[
+  {
+    "query_index": 1,
+    "query": "give me the number of movies directed by Sofia Coppola",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1022.218,
+    "total_latency_s": 1628.341,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movies directed by Sofia Coppola \u2192 count them | MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits| CHAIN: extract movie IDs from search results via JMESPath | COMBINE: SQL count of matched movies | FILTER: query param 'Sofia Coppola' for search, no additional filtering needed | VALIDATE: \u2713 search uses required query param, \u2713 SQL counts results, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 2,
+    "query": "Who was the lead actor in the movie The Dark Knight?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 822.43,
+    "total_latency_s": 1347.501,
+    "planned_count": 6,
+    "oracle_count": 2,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_season",
+      "genre_movie_list",
+      "search_movie",
+      "tv_popular",
+      "person_tv_credits",
+      "movie_recommendations"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}/credits"
+    ],
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request. | MAP: tmdb / GET /tv/{id}/season/{id} + GET /genre/movie/list + GET /search/movie + GET /tv/popular + GET /person/{id}/tv_credits + GET /movie/{id}/recommendations",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season",
+          "url": "http://mock-server:8080/rest/tv/1/season/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_movie_list",
+          "url": "http://mock-server:8080/rest/genre/movie/list"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_recommendations",
+          "url": "http://mock-server:8080/rest/movie/1/recommendations"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 3,
+    "query": "Who directed the top-1 rated movie?",
+    "oracle": [
+      "GET /movie/top_rated",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1175.862,
+    "total_latency_s": 2058.028,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /movie/top_rated",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find top-rated movie by vote_average (highest) \u2192 get director | MAP: tmdb / GET /movie/top_rated + GET /movie/{id}/credits| CHAIN: JMESPath to extract top-rated movie from results | COMBINE: chain: get_movie_director uses top_rated_movie to fetch director via nested field | FILTER: vote_average_gte=9.0 (assumed threshold for top-1), but use ORDER BY+LIMIT in SQL to ensure top-1 | VALIDATE: \u2713 top_rated_movie[0] used, \u2713 no bare placeholders, \u2713 SQL used for sorting and limiting",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_top_rated",
+          "url": "http://mock-server:8080/rest/movie/top_rated"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 4,
+    "query": "give me a image for the collection Star Wars",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2080.456,
+    "total_latency_s": 3148.361,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find collection 'Star Wars' \u2192 get images | MAP: tmdb / GET /search/collection + GET /collection/{id}/images| CHAIN: get_collection_id from search_results[?name=='Star Wars'] | [0].id | COMBINE: chain: get_collection_images consumes search_collection via JMESPath | FILTER: name match via JMESPath, not query param | VALIDATE: \u2713 collection_id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection_images",
+          "url": "http://mock-server:8080/rest/collection/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 5,
+    "query": "What is the logo of the Walt Disney?",
+    "oracle": [
+      "GET /search/company",
+      "GET /company/{company_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 897.056,
+    "total_latency_s": 1409.713,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/company",
+      "get /company/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Walt Disney as a studio \u2192 get logo from movie metadata | MAP: tmdb / GET /search/company + GET /company/{id}/images| CHAIN: none | COMBINE: single | FILTER: query 'Walt Disney' in search, logo not directly available | VALIDATE: \u2713 no bare placeholders, \u2713 service supports query param",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_company",
+          "url": "http://mock-server:8080/rest/search/company"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company_images",
+          "url": "http://mock-server:8080/rest/company/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 6,
+    "query": "What dose the lead actor of Titanic look like?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /person/{person_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1065.682,
+    "total_latency_s": 1738.912,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie",
+      "genre_movie_list",
+      "movie_upcoming",
+      "tv_airing_today",
+      "company"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /person/{param}/images"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Titanic movie \u2192 get cast \u2192 find lead actor \u2192 describe appearance | MAP: tmdb / GET /movie/{id} + GET /genre/movie/list + GET /movie/upcoming + GET /tv/airing_today + GET /company/{id}| CHAIN: get_movie_id from search_results[?title=='Titanic'] | [0].id | COMBINE: chain: fetch_cast uses get_movie_id as input | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie",
+          "url": "http://mock-server:8080/rest/movie/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_movie_list",
+          "url": "http://mock-server:8080/rest/genre/movie/list"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_upcoming",
+          "url": "http://mock-server:8080/rest/movie/upcoming"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_airing_today",
+          "url": "http://mock-server:8080/rest/tv/airing_today"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company",
+          "url": "http://mock-server:8080/rest/company/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 7,
+    "query": "give me some reviews of the first movie that is similar to Titanic",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/similar",
+      "GET /movie/{movie_id}/reviews"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1105.974,
+    "total_latency_s": 1834.737,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/similar",
+      "get /movie/{param}/reviews"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find first movie similar to Titanic \u2192 get its reviews | MAP: tmdb / GET /search/movie + GET /movie/{id}/similar + GET /movie/{id}/reviews| CHAIN: GET /search/movie query='Titanic' \u2190 first result.id | COMBINE: chain: get_movie_reviews consumes search_movie via JMESPath | FILTER: query='Titanic' via param, not JMESPath | VALIDATE: \u2713 query in param, \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_similar",
+          "url": "http://mock-server:8080/rest/movie/1/similar"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_reviews",
+          "url": "http://mock-server:8080/rest/movie/1/reviews"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 8,
+    "query": "I just finished watching Titanic and I want some other movie recommendations",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/recommendations"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 903.211,
+    "total_latency_s": 1432.295,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie",
+      "movie_top_rated",
+      "movie_popular",
+      "movie_keywords"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}/recommendations"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movies similar to Titanic \u2192 recommend based on title | MAP: tmdb / GET /movie/{id} + GET /movie/top_rated + GET /movie/popular + GET /movie/{id}/keywords| CHAIN: get_search_results[?title=='Titanic'] | [0].id | COMBINE: chain: recommend_similar_movies consumes search_results via JMESPath | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie",
+          "url": "http://mock-server:8080/rest/movie/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_top_rated",
+          "url": "http://mock-server:8080/rest/movie/top_rated"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_popular",
+          "url": "http://mock-server:8080/rest/movie/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 9,
+    "query": "What is the latest movie directed by Christopher Nolan?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1006.718,
+    "total_latency_s": 1644.753,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find latest movie by Christopher Nolan \u2192 MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits| CHAIN: GET /search/movie query \u2190 'Christopher Nolan' | results[?name==`Christopher Nolan`].id | COMBINE: chain: get_latest_movie_by_director consumes search_results via JMESPath | FILTER: director name match via query param, not response parsing | VALIDATE: \u2713 query param used, \u2713 no bare placeholders, \u2713 GET only",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 10,
+    "query": "tell me the highest rated movie directed by Martin Scorsese",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1028.345,
+    "total_latency_s": 1726.24,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Martin Scorsese directed movie with highest rating \u2192 MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits| CHAIN: use SQL to rank results by vote_average descending | FILTER: director name match via query param, then filter by director in results | VALIDATE: \u2713 required param query='Martin Scorsese', \u2713 SQL on results, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 11,
+    "query": "Who is the director of Leonardo DiCaprio's latest movie?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 990.121,
+    "total_latency_s": 1550.848,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Leonardo DiCaprio's latest movie \u2192 get its director | MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits + GET /movie/{id}/credits| CHAIN: query parameter in /search/movie matches actor name, then use latest movie's id to fetch director | FILTER: query='Leonardo DiCaprio' in /search/movie, then match latest movie via id in results | VALIDATE: \u2713 query param used, \u2713 no bare placeholders, \u2713 service_id correct",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 12,
+    "query": "tell me a TV show recently directed by Catherine Hardwicke",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/tv_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 908.826,
+    "total_latency_s": 1434.406,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/tv_credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show directed by Catherine Hardwicke | MAP: tmdb / GET /search/person + GET /person/{id}/tv_credits| CHAIN: filter results by director via JMESPath | COMBINE: single TV show from filtered list | FILTER: director match via JMESPath, not query param | VALIDATE: \u2713 valid service, \u2713 required param 'query', \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 13,
+    "query": "Please recommend me some TV shows similar to Breaking Bad",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/recommendations"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 994.197,
+    "total_latency_s": 1637.955,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/recommendations"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show 'Breaking Bad' \u2192 get similar shows | MAP: tmdb / GET /search/tv + GET /tv/{id}/recommendations| CHAIN: extract id from search results via JMESPath | COMBINE: use extracted id to fetch similar shows via GET /tv/{id}/similar | FILTER: match title 'Breaking Bad' exactly in search, then retrieve similar TV shows | VALIDATE: \u2713 correct service_id, \u2713 valid URL with path parameter, \u2713 no bare placeholders, \u2713 JMESPath for id extraction",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_recommendations",
+          "url": "http://mock-server:8080/rest/tv/1/recommendations"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 14,
+    "query": "Who is the director of today's most trending movie?",
+    "oracle": [
+      "GET /trending/{media_type}/{time_window}",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 999.779,
+    "total_latency_s": 1500.441,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /trending/{param}/{param}",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find today's most trending movie \u2192 get its director | MAP: tmdb / GET /trending/{id}/{id} + GET /movie/{id}/credits| CHAIN: latest_movie.id \u2190 get_movie_latest | COMBINE: chain: get_director consumes get_movie_latest via JMESPath | FILTER: no additional params needed, latest movie is inherently trending | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending",
+          "url": "http://mock-server:8080/rest/trending/1/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 15,
+    "query": "Who is the director of the movie \"Twilight\"?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 950.841,
+    "total_latency_s": 1477.281,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'Twilight' by title \u2192 get director | MAP: tmdb / GET /search/movie + GET /movie/{id}/credits| CHAIN: JMESPath to extract director from search results | FILTER: query param 'Twilight' matches title, not via POST | VALIDATE: \u2713 query param used, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 16,
+    "query": "give me a photo belong to the second episode of the first season of the Witcher",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/episode/{episode_number}/images"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 863.832,
+    "total_latency_s": 1393.881,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/episode/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find The Witcher TV show \u2192 get first season \u2192 get second episode \u2192 retrieve image \u2192 MAP: tmdb / GET /search/tv + GET /tv/{id}/season/{id}/episode/{id}/images| CHAIN: no service provides episode image directly | COMBINE: cannot fulfill request due to missing image endpoint | FILTER: no valid path to image | VALIDATE: \u2715 no service supports photo retrieval for specific episode",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_images",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 17,
+    "query": "What is top-1 rated movie?",
+    "oracle": [
+      "GET /movie/top_rated"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 995.234,
+    "total_latency_s": 1479.835,
+    "planned_count": 5,
+    "oracle_count": 1,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_top_rated",
+      "movie_credits",
+      "tv_season_episode",
+      "trending_person_day",
+      "search_tv"
+    ],
+    "oracle_missed": [
+      "get /movie/top_rated"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_top_rated",
+          "url": "http://mock-server:8080/rest/movie/top_rated"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_person_day",
+          "url": "http://mock-server:8080/rest/trending/person/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /movie/top_rated + GET /movie/{id}/credits + GET /tv/{id}/season/{id}/episode/{id} + GET /trending/person/day + GET /search/tv | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 18,
+    "query": "What is the release date of the movie \"The Matrix\"?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/release_dates"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 932.496,
+    "total_latency_s": 1470.361,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/release_dates"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie titled 'The Matrix' \u2192 extract release_date | MAP: tmdb / GET /search/movie + GET /movie/{id}/release_dates| CHAIN: GET /search/movie query \u2190 'The Matrix' | [0].release_date | COMBINE: single: return release_date from search result | FILTER: title match via query param, not JMESPath | VALIDATE: \u2713 query param used, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_release_dates",
+          "url": "http://mock-server:8080/rest/movie/1/release_dates"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 19,
+    "query": "Who is the most popular person?",
+    "oracle": [
+      "GET /person/popular"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 843.38,
+    "total_latency_s": 1380.299,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /person/popular"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find most popular person \u2192 MAP: tmdb / GET /person/popular| CHAIN: none | COMBINE: single | FILTER: popularity rank via GET /person/popular response | VALIDATE: \u2713 GET /person/popular returns list, \u2713 most popular via sorting, \u2713 no placeholder injection needed",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_popular",
+          "url": "http://mock-server:8080/rest/person/popular"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 20,
+    "query": "Give me some cover images of movies directed by Christopher Nolan.",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits",
+      "GET /movie/{movie_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 875.327,
+    "total_latency_s": 1443.952,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits",
+      "get /movie/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movies directed by Christopher Nolan \u2192 get cover images | MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits + GET /movie/{id}/images| CHAIN: none | COMBINE: single: get cover images from search results | FILTER: query='Christopher Nolan' via GET param, not JMESPath | VALIDATE: \u2713 query param in GET, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_images",
+          "url": "http://mock-server:8080/rest/movie/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 21,
+    "query": "What are some common keywords associated with movie \"Titanic\"?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1011.852,
+    "total_latency_s": 1573.998,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/keywords"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'Titanic' by title \u2192 extract keywords | MAP: tmdb / GET /search/movie + GET /movie/{id}/keywords| CHAIN: get_search_results uses query='Titanic' to find movie | [0].id | COMBINE: chain: extract keywords via get_movie_keywords from movie.id | FILTER: title match via query param, not JMESPath | VALIDATE: \u2713 query param used, \u2713 id injected, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 22,
+    "query": "Give me a show that is currently on the air",
+    "oracle": [
+      "GET /tv/on_the_air"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 868.441,
+    "total_latency_s": 1371.114,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/on_the_air"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show on the air \u2192 MAP: tmdb / GET /tv/on_the_air| CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 GET with no params, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_on_the_air",
+          "url": "http://mock-server:8080/rest/tv/on_the_air"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 23,
+    "query": "When is Clint Eastwood's latest movie scheduled to be released?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits",
+      "GET /movie/{movie_id}/release_dates"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1118.001,
+    "total_latency_s": 1903.48,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits",
+      "get /movie/{param}/release_dates"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Clint Eastwood's latest movie by name \u2192 get release date | MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits + GET /movie/{id}/release_dates| CHAIN: get_clint_movies uses query='Clint Eastwood' to find film IDs, then fetch latest movie via GET /movie/latest | COMBINE: chain: latest_movie uses get_clint_movies to find matching ID, then checks if it matches latest movie | FILTER: query='Clint Eastwood' via GET /search/movie, not param in /movie/latest | VALIDATE: \u2713 query param used, \u2713 no bare placeholders, \u2713 JMESPath extracts film ID from results",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_release_dates",
+          "url": "http://mock-server:8080/rest/movie/1/release_dates"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 24,
+    "query": "Give me some movie reviews about The Dark Knight",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/reviews"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 742.695,
+    "total_latency_s": 1063.329,
+    "planned_count": 5,
+    "oracle_count": 2,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "collection",
+      "movie_videos",
+      "tv_reviews",
+      "movie_now_playing",
+      "movie_keywords"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}/reviews"
+    ],
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request. | MAP: tmdb / GET /collection/{id} + GET /movie/{id}/videos + GET /tv/{id}/reviews + GET /movie/now_playing + GET /movie/{id}/keywords",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_videos",
+          "url": "http://mock-server:8080/rest/movie/1/videos"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_reviews",
+          "url": "http://mock-server:8080/rest/tv/1/reviews"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_now_playing",
+          "url": "http://mock-server:8080/rest/movie/now_playing"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 25,
+    "query": "What are some movies that are similar to one of the movies directed by Francis Ford Coppola?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits",
+      "GET /movie/{movie_id}/similar"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1233.793,
+    "total_latency_s": 2158.598,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/movie_credits",
+      "get /movie/{param}/similar"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find a movie directed by Francis Ford Coppola \u2192 get similar movies | MAP: tmdb / GET /search/person + GET /person/{id}/movie_credits + GET /movie/{id}/similar| CHAIN: GET /search/movie with query 'Francis Ford Coppola' \u2192 extract movie_id from results[0] \u2192 use it in GET /movie/{movie_id}/similar | COMBINE: chain: get_similar_movies consumes search_movies via JMESPath | FILTER: query param 'Francis Ford Coppola' for search, not direct filter | VALIDATE: \u2713 movie_id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_similar",
+          "url": "http://mock-server:8080/rest/movie/1/similar"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 26,
+    "query": "Who is the lead actor in the latest released movie?",
+    "oracle": [
+      "GET /movie/latest",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 859.347,
+    "total_latency_s": 1457.297,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /movie/latest",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find latest movie by release date \u2192 get lead actor from movie details | MAP: tmdb / GET /movie/latest + GET /movie/{id}/credits| CHAIN: none | COMBINE: single: fetch latest movie then extract cast | FILTER: latest movie via GET /movie/latest, actor via external lookup not possible | VALIDATE: \u2713 service provides latest movie, \u2713 no bare placeholders, \u2713 only catalog endpoints used",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_latest",
+          "url": "http://mock-server:8080/rest/movie/latest"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 27,
+    "query": "give me one image of the movie that is currently showing in theaters",
+    "oracle": [
+      " GET /movie/now_playing",
+      "GET /movie/{movie_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 932.036,
+    "total_latency_s": 1513.871,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /movie/now_playing",
+      "get /movie/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie currently showing in theaters \u2192 get its poster image | MAP: tmdb / GET /movie/now_playing + GET /movie/{id}/images| CHAIN: none | COMBINE: single: return poster path from first result | FILTER: none | VALIDATE: \u2713 GET /movie/now_playing returns array, \u2713 first result contains poster_path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_now_playing",
+          "url": "http://mock-server:8080/rest/movie/now_playing"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_images",
+          "url": "http://mock-server:8080/rest/movie/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 28,
+    "query": "What is the most popular movie right now and what is its keywords?",
+    "oracle": [
+      "GET /movie/popular",
+      "GET /movie/{movie_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 924.1,
+    "total_latency_s": 1489.528,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_popular",
+      "tv_similar",
+      "genre_tv_list"
+    ],
+    "oracle_missed": [
+      "get /movie/popular",
+      "get /movie/{param}/keywords"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find most popular movie | MAP: tmdb / GET /movie/popular + GET /tv/{id}/similar + GET /genre/tv/list| CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 popular movies endpoint exists, \u2713 keywords not in response so cannot retrieve, \u2713 no service for keywords, \u2713 only movie title and id available",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_popular",
+          "url": "http://mock-server:8080/rest/movie/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_similar",
+          "url": "http://mock-server:8080/rest/tv/1/similar"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_tv_list",
+          "url": "http://mock-server:8080/rest/genre/tv/list"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 29,
+    "query": "What are the keywords of the most popular movie right now",
+    "oracle": [
+      " GET /movie/popular",
+      "GET /movie/{movie_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 983.346,
+    "total_latency_s": 1523.311,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /movie/popular",
+      "get /movie/{param}/keywords"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find most popular movie \u2192 get its keywords | MAP: tmdb / GET /movie/popular + GET /movie/{id}/keywords| CHAIN: get_popular_movie[0].id \u2190 get_popular_movie | COMBINE: chain: get_movie_keywords consumes get_popular_movie via JMESPath | FILTER: most popular via LIMIT 1, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_popular",
+          "url": "http://mock-server:8080/rest/movie/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 30,
+    "query": "Who has starred in a movie \"Titanic\"",
+    "oracle": [
+      "GET /search/movie ",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1056.956,
+    "total_latency_s": 1817.638,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'Titanic' \u2192 get cast \u2192 MAP: tmdb / GET /search/movie + GET /movie/{id}/credits| CHAIN: get_movie_by_title uses search_movie to find Titanic, then extract id for credits | COMBINE: chain: get_cast uses search_movie result to get movie ID, then calls /movie/{id}/credits | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 31,
+    "query": "What do the logo looks like for Paramount Pictures?",
+    "oracle": [
+      "GET /company/{company_id}",
+      "GET /company/{company_id}/images"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 719.564,
+    "total_latency_s": 1292.795,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_season_episode_credits",
+      "tv_season_episode_images",
+      "movie_images"
+    ],
+    "oracle_missed": [
+      "get /company/{param}",
+      "get /company/{param}/images"
+    ],
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request. | MAP: tmdb / GET /tv/{id}/season/{id}/episode/{id}/credits + GET /tv/{id}/season/{id}/episode/{id}/images + GET /movie/{id}/images",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_images",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_images",
+          "url": "http://mock-server:8080/rest/movie/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 32,
+    "query": "tell me where the company \"universal pictures\" was founded?",
+    "oracle": [
+      "GET /search/company",
+      "GET /company/{company_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1026.509,
+    "total_latency_s": 1651.699,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/company",
+      "get /company/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find company 'universal pictures' location \u2192 MAP: tmdb / GET /search/company + GET /company/{id}| CHAIN: extract company from results[?name=='universal pictures'] | [0].origin_country | COMBINE: single: return origin_country from matched company | FILTER: name match via JMESPath, not query param | VALIDATE: \u2713 query param set, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_company",
+          "url": "http://mock-server:8080/rest/search/company"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company",
+          "url": "http://mock-server:8080/rest/company/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 33,
+    "query": "When is the movie \"Titanic\" released?",
+    "oracle": [
+      "GET /search/movie ",
+      "GET /movie/{movie_id}/release_dates"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 895.322,
+    "total_latency_s": 1415.189,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/release_dates"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'Titanic' by title \u2192 get release date | MAP: tmdb / GET /search/movie + GET /movie/{id}/release_dates| CHAIN: query param \u2190 'Titanic' | COMBINE: single: return release_date from search result | FILTER: title match via query param, not JMESPath | VALIDATE: \u2713 query param in GET, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_release_dates",
+          "url": "http://mock-server:8080/rest/movie/1/release_dates"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 34,
+    "query": "Who has starred in the first movie of Star Wars collection?",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1349.474,
+    "total_latency_s": 2341.041,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find the first Star Wars movie by title \u2192 get its cast \u2192 map to actor names | MAP: tmdb / GET /search/collection + GET /collection/{id} + GET /movie/{id}/credits| CHAIN: first match from search results, then fetch credits by movie ID | COMBINE: chain: fetch cast via movie ID from search result | FILTER: title matches 'Star Wars' via JMESPath, not query param | VALIDATE: \u2713 movie ID in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 35,
+    "query": "give me a movie cover of a movie from the collection Harry Potter",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}",
+      "GET /movie/{movie_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 930.973,
+    "total_latency_s": 1489.039,
+    "planned_count": 6,
+    "oracle_count": 3,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_recommendations",
+      "tv_on_the_air",
+      "person_images",
+      "search_company",
+      "search_tv",
+      "person"
+    ],
+    "oracle_missed": [
+      "get /search/collection",
+      "get /collection/{param}",
+      "get /movie/{param}/images"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie titled 'Harry Potter' in collection \u2192 get cover art | MAP: tmdb / GET /tv/{id}/recommendations + GET /tv/on_the_air + GET /person/{id}/images + GET /search/company + GET /search/tv + GET /person/{id}| CHAIN: search for Harry Potter via query param | COMBINE: single: return first result's poster_path | FILTER: query='Harry Potter' | VALIDATE: \u2713 required param query, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_recommendations",
+          "url": "http://mock-server:8080/rest/tv/1/recommendations"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_on_the_air",
+          "url": "http://mock-server:8080/rest/tv/on_the_air"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_images",
+          "url": "http://mock-server:8080/rest/person/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_company",
+          "url": "http://mock-server:8080/rest/search/company"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 36,
+    "query": "What are some keywords for a movie of the collection The Hunger Games?",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}",
+      "GET /movie/{movie_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1126.727,
+    "total_latency_s": 1959.3,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}",
+      "get /movie/{param}/keywords"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find collection 'The Hunger Games' \u2192 get its movies \u2192 fetch keywords for one movie | MAP: tmdb / GET /search/collection + GET /collection/{id} + GET /movie/{id}/keywords| CHAIN: get_collection_id from search_results[?name=='The Hunger Games'] | [0].id | COMBINE: chain: get_keywords uses get_collection_movies via JMESPath | FILTER: collection name match via JMESPath, not query param | VALIDATE: \u2713 collection id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 37,
+    "query": "When are the release dates for the movies of the collection The Hobbit?",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1101.909,
+    "total_latency_s": 1910.559,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find collection 'The Hobbit' \u2192 get its movies \u2192 retrieve release dates | MAP: tmdb / GET /search/collection + GET /collection/{id}| CHAIN: use search to find collection by name, then extract movie IDs from results, use discover to get details including release_date | FILTER: collection name match via query param, filter by collection name in search | VALIDATE: \u2713 query param used, \u2713 release_date in response, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 38,
+    "query": "List movies from The Fast and the Furious collection",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 925.267,
+    "total_latency_s": 1491.506,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movies in The Fast and the Furious collection \u2192 MAP: tmdb / GET /search/collection + GET /collection/{id}| CHAIN: use JMESPath to extract titles from results | FILTER: only include results with title containing 'Fast and Furious' | VALIDATE: \u2713 query param used, \u2713 no bare placeholders, \u2713 unique service call",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 39,
+    "query": "Give me a review of a movie from the collection The Fast and the Furious.",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}",
+      "GET /movie/{movie_id}/reviews"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1145.397,
+    "total_latency_s": 2039.269,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}",
+      "get /movie/{param}/reviews"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie in collection 'The Fast and the Furious' \u2192 get review | MAP: tmdb / GET /search/collection + GET /collection/{id} + GET /movie/{id}/reviews| CHAIN: GET /search/movie query \u2190 'The Fast and the Furious' | [0].id | COMBINE: chain: fetch movie details via id from search result | FILTER: collection name match via query param, not JMESPath | VALIDATE: \u2713 query param used, \u2713 id injected into path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_reviews",
+          "url": "http://mock-server:8080/rest/movie/1/reviews"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 40,
+    "query": "When was the first movie of the collection Lord of the Rings released?",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1015.604,
+    "total_latency_s": 1607.775,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'Lord of the Rings' in collection \u2192 get its release date | MAP: tmdb / GET /search/collection + GET /collection/{id}| CHAIN: JMESPath to extract first result from search | FILTER: query='Lord of the Rings' to match title | VALIDATE: \u2713 query param used, \u2713 no bare placeholders, \u2713 single GET task",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 41,
+    "query": "tell me the directors of the first season of House of Cards",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/credits"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 756.585,
+    "total_latency_s": 1292.481,
+    "planned_count": 5,
+    "oracle_count": 2,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "trending_movie_day",
+      "company_images",
+      "genre_tv_list",
+      "movie_popular",
+      "movie_top_rated"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/credits"
+    ],
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request. | MAP: tmdb / GET /trending/movie/day + GET /company/{id}/images + GET /genre/tv/list + GET /movie/popular + GET /movie/top_rated",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_movie_day",
+          "url": "http://mock-server:8080/rest/trending/movie/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company_images",
+          "url": "http://mock-server:8080/rest/company/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_tv_list",
+          "url": "http://mock-server:8080/rest/genre/tv/list"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_popular",
+          "url": "http://mock-server:8080/rest/movie/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_top_rated",
+          "url": "http://mock-server:8080/rest/movie/top_rated"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 42,
+    "query": "I want some tv shows that similar to House of Cards",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/similar"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1051.43,
+    "total_latency_s": 1821.227,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_keywords",
+      "genre_movie_list",
+      "movie_videos"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/similar"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV shows similar to House of Cards \u2192 MAP: tmdb / GET /movie/{id}/keywords + GET /genre/movie/list + GET /movie/{id}/videos| CHAIN: use search results to identify similar shows via title or genre | FILTER: genre and title match via JMESPath, not query param | VALIDATE: \u2713 query param used, \u2713 no bare placeholders, \u2713 no AND-combined GET params",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_movie_list",
+          "url": "http://mock-server:8080/rest/genre/movie/list"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_videos",
+          "url": "http://mock-server:8080/rest/movie/1/videos"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 43,
+    "query": "When did the most popular TV show currently on the air start?",
+    "oracle": [
+      "GET /tv/on_the_air",
+      "GET /tv/{tv_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1917.818,
+    "total_latency_s": 3012.16,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/on_the_air",
+      "get /tv/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find the most popular TV show on the air \u2192 get its start date | MAP: tmdb / GET /tv/on_the_air + GET /tv/{id}| CHAIN: filter on_the_air_results by popularity (via JOIN with popular results) | COMBINE: SQL to find max popularity and match show with start_date | FILTER: on_the_air and popular, ordered by popularity descending | VALIDATE: \u2713 start_date in response, \u2713 no bare placeholders, \u2713 SQL for aggregation",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_on_the_air",
+          "url": "http://mock-server:8080/rest/tv/on_the_air"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv",
+          "url": "http://mock-server:8080/rest/tv/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 44,
+    "query": "tell me a few more works directed by the director of Django Unchained",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /person/{person_id}/movie_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1596.751,
+    "total_latency_s": 2645.025,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_season_episode_credits",
+      "movie_images",
+      "tv_popular",
+      "movie_credits"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /person/{param}/movie_credits"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find director of Django Unchained \u2192 retrieve their other works | MAP: tmdb / GET /tv/{id}/season/{id}/episode/{id}/credits + GET /movie/{id}/images + GET /tv/popular + GET /movie/{id}/credits| CHAIN: search for Django Unchained via GET /search/movie, extract director from result, then query for other works by same director using available endpoints | COMBINE: chain: use search result to fetch director's name, then query popular movies to find others by same director via SQL filter | FILTER: filter by director name from search result, not query param | VALIDATE: \u2713 search uses required query param, \u2713 no bare placeholders, \u2713 SQL filters on director field from prior task",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_images",
+          "url": "http://mock-server:8080/rest/movie/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 45,
+    "query": "tell me the cast of a TV show on the air",
+    "oracle": [
+      "GET /tv/on_the_air",
+      "GET /tv/{tv_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1057.354,
+    "total_latency_s": 1853.038,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/on_the_air",
+      "get /tv/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find a TV show on the air \u2192 get its cast | MAP: tmdb / GET /tv/on_the_air + GET /tv/{id}/credits| CHAIN: none | COMBINE: single: fetch on_the_air shows, then search by title to get cast via GET /search/tv | FILTER: on_the_air status from /tv/on_the_air, cast via /search/tv with query | VALIDATE: \u2713 GET /tv/on_the_air returns array, \u2713 /search/tv requires query, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_on_the_air",
+          "url": "http://mock-server:8080/rest/tv/on_the_air"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 46,
+    "query": "I need a review for Breaking Bad",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/reviews"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 983.409,
+    "total_latency_s": 1439.365,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/reviews"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show 'Breaking Bad' \u2192 retrieve review | MAP: tmdb / GET /search/tv + GET /tv/{id}/reviews| CHAIN: GET /search/tv query \u2190 'Breaking Bad' | [0].id | COMBINE: single: fetch TV show details via id | FILTER: query match via param, not JMESPath | VALIDATE: \u2713 required param 'query', \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_reviews",
+          "url": "http://mock-server:8080/rest/tv/1/reviews"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 47,
+    "query": "I'm watching the tv series The Last Of Us and I need some more recommendations",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/recommendations"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1126.094,
+    "total_latency_s": 1986.083,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/recommendations"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find The Last Of Us TV series \u2192 get recommendations | MAP: tmdb / GET /search/tv + GET /tv/{id}/recommendations| CHAIN: GET /search/tv query \u2190 'The Last Of Us' | [0].id | COMBINE: chain: get_recommendations consumes search_result via JMESPath | FILTER: title match via query param, not JMESPath filtering | VALIDATE: \u2713 query param used, \u2713 tv_id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_recommendations",
+          "url": "http://mock-server:8080/rest/tv/1/recommendations"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 48,
+    "query": "I'm watching a TV show called The Last Of Us and I need some more recommendations",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/recommendations"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1146.604,
+    "total_latency_s": 2046.801,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/recommendations"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show 'The Last Of Us' \u2192 get recommendations | MAP: tmdb / GET /search/tv + GET /tv/{id}/recommendations| CHAIN: GET /search/tv query \u2190 'The Last Of Us' | [0].id | COMBINE: chain: get_recommendations consumes search_results via JMESPath | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_recommendations",
+          "url": "http://mock-server:8080/rest/tv/1/recommendations"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 49,
+    "query": "tell me the guest star from season 3, episode 24 of Friends",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/episode/{episode_number}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1184.436,
+    "total_latency_s": 2178.193,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/episode/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Friends TV show \u2192 get season 3, episode 24 \u2192 extract guest star | MAP: tmdb / GET /search/tv + GET /tv/{id}/season/{id}/episode/{id}/credits| CHAIN: search for 'Friends' to get show ID, then fetch season 3, episode 24 via ID | FILTER: query='Friends' for search, season=3, episode=24 in path | VALIDATE: \u2713 correct endpoints, \u2713 no bare placeholders, \u2713 params in URL, \u2713 no AND-combined GET params",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 50,
+    "query": "Who is the lead actor in the most popular TV show?",
+    "oracle": [
+      "GET /tv/popular",
+      "GET /tv/{tv_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1018.206,
+    "total_latency_s": 1659.18,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/popular",
+      "get /tv/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find most popular TV show \u2192 get its lead actor | MAP: tmdb / GET /tv/popular + GET /tv/{id}/credits| CHAIN: popular_tv[0].id \u2190 GET /tv/popular | COMBINE: actor from /search/movie query on show id | FILTER: most popular via ORDER BY popularity descending, limit 1 | VALIDATE: \u2713 id in path, \u2713 no bare placeholders, \u2713 param from catalog",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 51,
+    "query": "give me a keyword of the top-1 rated TV show",
+    "oracle": [
+      "GET /tv/top_rated",
+      "GET /tv/{tv_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1030.241,
+    "total_latency_s": 1692.214,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_airing_today",
+      "person",
+      "genre_movie_list"
+    ],
+    "oracle_missed": [
+      "get /tv/top_rated",
+      "get /tv/{param}/keywords"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_airing_today",
+          "url": "http://mock-server:8080/rest/tv/airing_today"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_movie_list",
+          "url": "http://mock-server:8080/rest/genre/movie/list"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /tv/airing_today + GET /person/{id} + GET /genre/movie/list | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 52,
+    "query": "give me a poster of 2 Broke Girls",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1077.561,
+    "total_latency_s": 1860.84,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "person_tv_credits",
+      "person_movie_credits",
+      "person_popular",
+      "search_company"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/images"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie '2 Broke Girls' \u2192 get poster | MAP: tmdb / GET /person/{id}/tv_credits + GET /person/{id}/movie_credits + GET /person/popular + GET /search/company| CHAIN: GET /search/tv \u2190 query '2 Broke Girls' | [0].id | COMBINE: chain: get_poster uses search result via JMESPath | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_popular",
+          "url": "http://mock-server:8080/rest/person/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_company",
+          "url": "http://mock-server:8080/rest/search/company"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 53,
+    "query": "How many episodes does 2 Broke Girls have in total?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1152.537,
+    "total_latency_s": 2057.393,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show '2 Broke Girls' \u2192 get total episodes | MAP: tmdb / GET /search/tv + GET /tv/{id}| CHAIN: GET /search/tv query \u2190 '2 Broke Girls' | [0].id | COMBINE: chain: get_tv_details consumes search_results via JMESPath | FILTER: name match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv",
+          "url": "http://mock-server:8080/rest/tv/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 54,
+    "query": "When was the company that produced The Big Bang Theory founded?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}",
+      "GET /company/{company_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 937.254,
+    "total_latency_s": 1454.042,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_season_episode",
+      "tv_season_episode_credits",
+      "tv_popular",
+      "tv_reviews",
+      "collection"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}",
+      "get /company/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find TV show 'The Big Bang Theory' \u2192 get production company \u2192 find company founding year | MAP: tmdb / GET /tv/{id}/season/{id}/episode/{id} + GET /tv/{id}/season/{id}/episode/{id}/credits + GET /tv/popular + GET /tv/{id}/reviews + GET /collection/{id}| CHAIN: search for show via query in /search/tv, then extract production company from results | FILTER: show title match via JMESPath, not query param | VALIDATE: \u2713 no bare placeholders, \u2713 correct service_id, \u2713 url starts with http://",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_reviews",
+          "url": "http://mock-server:8080/rest/tv/1/reviews"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 55,
+    "query": "When was the TV show The Big Bang Theory created?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 986.194,
+    "total_latency_s": 1582.613,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find creation date of The Big Bang Theory \u2192 MAP: tmdb / GET /search/tv + GET /tv/{id}| CHAIN: get_show_id from search results via JMESPath | COMBINE: use show_id to fetch details | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 query param used, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv",
+          "url": "http://mock-server:8080/rest/tv/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 56,
+    "query": "give me a keyword of the most popular TV show",
+    "oracle": [
+      "GET /tv/popular",
+      "GET /tv/{tv_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 941.879,
+    "total_latency_s": 1546.149,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/popular",
+      "get /tv/{param}/keywords"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve most popular TV show \u2192 extract keyword from title | MAP: tmdb / GET /tv/popular + GET /tv/{id}/keywords| CHAIN: JMESPath to get title of first result | COMBINE: single: keyword extracted from title | FILTER: none | VALIDATE: \u2713 GET /tv/popular returns array, \u2713 title is in response, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_keywords",
+          "url": "http://mock-server:8080/rest/tv/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 57,
+    "query": "What did the third episode of the second season of Westworld talk about?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/episode/{episode_number}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1826.8,
+    "total_latency_s": 2854.444,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "trending_tv_day",
+      "tv_popular",
+      "movie_videos"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/episode/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Westworld TV show \u2192 get second season \u2192 get third episode \u2192 retrieve episode summary | MAP: tmdb / GET /trending/tv/day + GET /tv/popular + GET /movie/{id}/videos| CHAIN: use search to find show ID, then fetch season data, then get episode details via nested GET | FILTER: match show by title 'Westworld' in search, filter season by number 2, episode by number 3 | VALIDATE: \u2713 all required params provided, \u2713 no bare placeholders, \u2713 chained via JMESPath",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_tv_day",
+          "url": "http://mock-server:8080/rest/trending/tv/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_videos",
+          "url": "http://mock-server:8080/rest/movie/1/videos"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 58,
+    "query": "Tell me the air date of the second season of Game of Thrones",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 842.586,
+    "total_latency_s": 1456.96,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_keywords",
+      "genre_movie_list",
+      "tv_season_episode_credits",
+      "person_tv_credits"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Game of Thrones TV show \u2192 get its second season air date | MAP: tmdb / GET /movie/{id}/keywords + GET /genre/movie/list + GET /tv/{id}/season/{id}/episode/{id}/credits + GET /person/{id}/tv_credits| CHAIN: GET /search/tv query 'Game of Thrones' returns show id | COMBINE: use show id to find second season via external metadata (not available in catalog) | FILTER: no direct endpoint for season dates; cannot retrieve season-specific air dates | VALIDATE: \u2715 no service provides season air date, cannot fulfil request",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_movie_list",
+          "url": "http://mock-server:8080/rest/genre/movie/list"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 59,
+    "query": " give me a poster of the third episode of Band of Brothers",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/episode/{episode_number}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1907.201,
+    "total_latency_s": 2943.755,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/episode/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Band of Brothers TV show \u2192 get its episodes \u2192 select third episode \u2192 retrieve poster | MAP: tmdb / GET /search/tv + GET /tv/{id}/season/{id}/episode/{id}/images| CHAIN: get_search_results[?name=='Band of Brothers'] | [0].id \u2190 get_show_id | get_show_episodes[?episode_number==3] | [0].still_path \u2190 get_poster_path | COMBINE: chain: get_poster uses search result and episode data via JMESPath | FILTER: name match via JMESPath, not query param; episode_number=3 | VALIDATE: \u2713 id in path, \u2713 no bare placeholders, \u2713 correct endpoint for episode still path",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_images",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 60,
+    "query": "What is the logo of the network that produced Game of Thrones?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}",
+      "GET /network/{network_id}/images"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 946.88,
+    "total_latency_s": 1473.6,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_similar",
+      "trending_movie_day",
+      "person_movie_credits",
+      "discover_tv"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}",
+      "get /network/{param}/images"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Game of Thrones TV show \u2192 get its production network \u2192 fetch network logo | MAP: tmdb / GET /tv/{id}/similar + GET /trending/movie/day + GET /person/{id}/movie_credits + GET /discover/tv| CHAIN: search for Game of Thrones via query, extract network_id from results, use network_id to fetch logo via external source (not available in catalog) | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 no bare placeholders, \u2713 network logo not in catalog, cannot resolve | CONSTRAINT: no service provides logo by network ID",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_similar",
+          "url": "http://mock-server:8080/rest/tv/1/similar"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_movie_day",
+          "url": "http://mock-server:8080/rest/trending/movie/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "discover_tv",
+          "url": "http://mock-server:8080/rest/discover/tv"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 61,
+    "query": "give me the homepage of the network that produced Game of Thrones",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}",
+      "GET /network/{network_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1042.737,
+    "total_latency_s": 1768.41,
+    "planned_count": 6,
+    "oracle_count": 3,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "company_images",
+      "network",
+      "search_collection",
+      "trending_movie_day",
+      "search_tv",
+      "discover_tv"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}",
+      "get /network/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find network that produced Game of Thrones \u2192 get homepage of that network | MAP: tmdb / GET /company/{id}/images + GET /network/{id} + GET /search/collection + GET /trending/movie/day + GET /search/tv + GET /discover/tv| CHAIN: get_search_results \u2190 get all TV shows matching 'Game of Thrones' | [0].network_name | COMBINE: chain: fetch network homepage via network_name from search result | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 network_name in response, \u2713 homepage URL from network details",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company_images",
+          "url": "http://mock-server:8080/rest/company/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "network",
+          "url": "http://mock-server:8080/rest/network/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_movie_day",
+          "url": "http://mock-server:8080/rest/trending/movie/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "discover_tv",
+          "url": "http://mock-server:8080/rest/discover/tv"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 62,
+    "query": "give me a keyword of the most popular TV show currently",
+    "oracle": [
+      "GET /tv/popular",
+      "GET /tv/{tv_id}/keywords"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1263.338,
+    "total_latency_s": 2253.336,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_reviews",
+      "genre_movie_list",
+      "search_company"
+    ],
+    "oracle_missed": [
+      "get /tv/popular",
+      "get /tv/{param}/keywords"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_reviews",
+          "url": "http://mock-server:8080/rest/movie/1/reviews"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "genre_movie_list",
+          "url": "http://mock-server:8080/rest/genre/movie/list"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_company",
+          "url": "http://mock-server:8080/rest/search/company"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /movie/{id}/reviews + GET /genre/movie/list + GET /search/company | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 63,
+    "query": "Where is the headquarter of the company that produced currently the most popular TV show?",
+    "oracle": [
+      "GET /tv/popular",
+      "GET /tv/{tv_id}",
+      "GET /company/{company_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1602.165,
+    "total_latency_s": 2543.159,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/popular",
+      "get /tv/{param}",
+      "get /company/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find the most popular TV show \u2192 get its production company \u2192 find company headquarters | MAP: tmdb / GET /tv/popular + GET /tv/{id} + GET /company/{id}| CHAIN: GET /tv/popular returns list; find top-rated show via ORDER BY popularity; extract production_companies; use first company ID in /search/company | COMBINE: chain: search_company consumes tv_popular results via JMESPath | FILTER: filter by top-rated (order by popularity descending, limit 1); use company name from search result | VALIDATE: \u2713 correct endpoint usage, \u2713 no bare placeholders, \u2713 required params only",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv",
+          "url": "http://mock-server:8080/rest/tv/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company",
+          "url": "http://mock-server:8080/rest/company/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 64,
+    "query": "What is the genre of The Mandalorian?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1012.444,
+    "total_latency_s": 1634.451,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find The Mandalorian TV show \u2192 get genre | MAP: tmdb / GET /search/tv + GET /tv/{id}| CHAIN: GET /search/tv returns results, extract first item's genre | COMBINE: single: genre from first result | FILTER: query param 'The+Mandalorian' | VALIDATE: \u2713 correct service, \u2713 no bare placeholders, \u2713 valid URL and param",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv",
+          "url": "http://mock-server:8080/rest/tv/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 65,
+    "query": "When is the birthday of the lead actor of today's most trending TV show?",
+    "oracle": [
+      "GET /trending/{media_type}/{time_window}",
+      "GET /tv/{tv_id}/credits",
+      "GET /person/{person_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2602.083,
+    "total_latency_s": 3461.378,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /trending/{param}/{param}",
+      "get /tv/{param}/credits",
+      "get /person/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find today's most trending TV show \u2192 get lead actor (person) \u2192 get actor's birthday | MAP: tmdb / GET /trending/{id}/{id} + GET /tv/{id}/credits + GET /person/{id}| CHAIN: use GET /tv/on_the_air to get top trending show, extract lead actor's name from show's cast, then search for that person in /person/popular | COMBINE: chain: fetch trending show, extract actor name, then query person by name | FILTER: only one trending show (LIMIT 1), use full name for actor match | VALIDATE: \u2713 correct endpoints, \u2713 no bare placeholders, \u2713 use JMESPath for extraction",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending",
+          "url": "http://mock-server:8080/rest/trending/1/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 66,
+    "query": "What is the homepage of the network that produced today's most trending TV show?",
+    "oracle": [
+      "GET /trending/{media_type}/{time_window}",
+      "GET /tv/{tv_id}",
+      "GET /network/{network_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1324.426,
+    "total_latency_s": 2320.482,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /trending/{param}/{param}",
+      "get /tv/{param}",
+      "get /network/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find today's most trending TV show \u2192 get network homepage | MAP: tmdb / GET /trending/{id}/{id} + GET /tv/{id} + GET /network/{id}| CHAIN: JMESPath to extract trending show from on_the_air results | COMBINE: query search/tv with show name to get network info | FILTER: trend by airing date (today), match via JMESPath | VALIDATE: \u2713 homepage in response, \u2713 no bare placeholders, \u2713 required param query in search",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending",
+          "url": "http://mock-server:8080/rest/trending/1/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv",
+          "url": "http://mock-server:8080/rest/tv/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "network",
+          "url": "http://mock-server:8080/rest/network/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 67,
+    "query": "give me a review of today's most trending TV show",
+    "oracle": [
+      "GET /trending/{media_type}/{time_window}",
+      "GET /tv/{tv_id}/reviews"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1090.157,
+    "total_latency_s": 1796.092,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /trending/{param}/{param}",
+      "get /tv/{param}/reviews"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: identify today's most trending TV show \u2192 retrieve review data | MAP: tmdb / GET /trending/{id}/{id} + GET /tv/{id}/reviews| CHAIN: none | COMBINE: single: use GET /tv/on_the_air to get currently airing shows, then filter for the most trending via popularity | FILTER: trending defined by highest popularity score, inferred from response order in /tv/on_the_air | VALIDATE: \u2713 correct service_id, \u2713 required param in /search/tv not needed since /tv/on_the_air returns trending shows directly",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending",
+          "url": "http://mock-server:8080/rest/trending/1/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_reviews",
+          "url": "http://mock-server:8080/rest/tv/1/reviews"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 68,
+    "query": "I prefer a TV show that similar to today's most trending TV show",
+    "oracle": [
+      "GET /trending/{media_type}/{time_window}",
+      "GET /tv/{tv_id}/similar"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1229.71,
+    "total_latency_s": 2193.972,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /trending/{param}/{param}",
+      "get /tv/{param}/similar"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find today's most trending TV show \u2192 get similar shows | MAP: tmdb / GET /trending/{id}/{id} + GET /tv/{id}/similar| CHAIN: get_on_the_air_tvs \u2192 [0].id \u2192 search_similar_shows query=ID | COMBINE: chain: search_similar_shows uses get_on_the_air_tvs[0].id via JMESPath | FILTER: trending via top result, similarity via search by ID | VALIDATE: \u2713 correct service, \u2713 no bare placeholders, \u2713 single param per GET",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending",
+          "url": "http://mock-server:8080/rest/trending/1/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_similar",
+          "url": "http://mock-server:8080/rest/tv/1/similar"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 69,
+    "query": "I need a poster of today's most trending TV show",
+    "oracle": [
+      "GET /trending/{media_type}/{time_window}",
+      "GET /tv/{tv_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1166.805,
+    "total_latency_s": 2087.418,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /trending/{param}/{param}",
+      "get /tv/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find today's most trending TV show \u2192 get its poster | MAP: tmdb / GET /trending/{id}/{id} + GET /tv/{id}/images| CHAIN: GET /tv/on_the_air returns list; extract trending show via JMESPath (assume 'first' is most recent) | COMBINE: use first show's id in /tv/{tv_id}/images | FILTER: no query params; use on-the-air as source of trending; assume top result is most recent | VALIDATE: \u2713 tv_id in path, \u2713 no bare placeholders, \u2713 service exists",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending",
+          "url": "http://mock-server:8080/rest/trending/1/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_images",
+          "url": "http://mock-server:8080/rest/tv/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 70,
+    "query": "Who has worked with Jeremy Clarkson in his most popular TV show?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/tv_credits",
+      "GET /tv/{tv_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2113.895,
+    "total_latency_s": 3196.492,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/tv_credits",
+      "get /tv/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Jeremy Clarkson's most popular TV show \u2192 get cast of that show \u2192 filter for cast members who worked with Clarkson | MAP: tmdb / GET /search/person + GET /person/{id}/tv_credits + GET /tv/{id}/credits| CHAIN: use JMESPath to extract show id from search results, then fetch credits | FILTER: filter cast by name 'Jeremy Clarkson' and return others | VALIDATE: \u2713 all service calls valid, \u2713 no bare placeholders, \u2713 param values from examples",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 71,
+    "query": "What does the lead actor of the first episode of second season of Black Mirror look like?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/credits",
+      "GET /person/{person_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1989.889,
+    "total_latency_s": 3074.136,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/credits",
+      "get /person/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Black Mirror second season episode 1 \u2192 get cast of that episode \u2192 identify lead actor \u2192 retrieve actor appearance details | MAP: tmdb / GET /search/tv + GET /tv/{id}/credits + GET /person/{id}/images| CHAIN: use search to find Black Mirror, then extract show id; use show id to fetch season 2, episode 1; extract cast from episode; find lead actor via role (e.g., 'lead' or 'main') | FILTER: filter cast by role or credited position; use JMESPath to extract first credited actor as lead | VALIDATE: \u2713 all required service calls, \u2713 no bare placeholders, \u2713 correct URL structure",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_images",
+          "url": "http://mock-server:8080/rest/person/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 72,
+    "query": "When is the lead actor of The Mandalorian born?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/credits",
+      "GET /person/{person_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2668.48,
+    "total_latency_s": 3591.131,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_airing_today",
+      "tv_recommendations",
+      "person_images",
+      "discover_tv",
+      "person_popular"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/credits",
+      "get /person/{param}"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_airing_today",
+          "url": "http://mock-server:8080/rest/tv/airing_today"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_recommendations",
+          "url": "http://mock-server:8080/rest/tv/1/recommendations"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_images",
+          "url": "http://mock-server:8080/rest/person/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "discover_tv",
+          "url": "http://mock-server:8080/rest/discover/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_popular",
+          "url": "http://mock-server:8080/rest/person/popular"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /tv/airing_today + GET /tv/{id}/recommendations + GET /person/{id}/images + GET /discover/tv + GET /person/popular | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 73,
+    "query": "Who is the lead actor of today's most popular TV show?",
+    "oracle": [
+      "GET /tv/popular",
+      "GET /tv/{tv_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1024.46,
+    "total_latency_s": 1697.7,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/popular",
+      "get /tv/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find today's most popular TV show \u2192 get its lead actor | MAP: tmdb / GET /tv/popular + GET /tv/{id}/credits| CHAIN: GET /tv/popular returns list, extract first via JMESPath | COMBINE: lead actor from first result's cast | FILTER: popularity sorted, take top result; actor role 'lead' not in query, inferred from context | VALIDATE: \u2713 GET /tv/popular, \u2713 JMESPath for first result, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 74,
+    "query": "give me a photo of the lead actor of the most popular TV show of this week",
+    "oracle": [
+      "GET /tv/popular",
+      "GET /tv/{tv_id}/credits",
+      "GET /person/{person_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1697.414,
+    "total_latency_s": 2757.337,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /tv/popular",
+      "get /tv/{param}/credits",
+      "get /person/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find most popular TV show this week \u2192 get lead actor of that show | MAP: tmdb / GET /tv/popular + GET /tv/{id}/credits + GET /person/{id}/images| CHAIN: GET /tv/popular returns list; select top result by popularity; use title to search for cast via /search/tv; extract lead actor from cast list; fetch actor image via /person/popular | FILTER: most popular TV show via LIMIT 1; actor role filter not available; use popularity as proxy | VALIDATE: \u2713 all services in catalog, \u2713 no bare placeholders, \u2713 URL params valid, \u2713 chained via JMESPath",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_images",
+          "url": "http://mock-server:8080/rest/person/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 75,
+    "query": "give me some reviews of Cate Blanchett's latest TV show",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/tv_credits",
+      "GET /tv/{tv_id}/reviews"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1467.456,
+    "total_latency_s": 2458.648,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/tv_credits",
+      "get /tv/{param}/reviews"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Cate Blanchett's latest TV show \u2192 get reviews | MAP: tmdb / GET /search/person + GET /person/{id}/tv_credits + GET /tv/{id}/reviews| CHAIN: search for Cate Blanchett in /search/tv, then filter on 'on_the_air' for latest show | COMBINE: chain: get show ID from search, then fetch show details via /tv/on_the_air | FILTER: use query='Cate Blanchett' in /search/tv, filter results by cast member name via JMESPath | VALIDATE: \u2713 valid service endpoints, \u2713 no bare placeholders, \u2713 required params provided",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_reviews",
+          "url": "http://mock-server:8080/rest/tv/1/reviews"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 76,
+    "query": "What is David Schwimmer's most popular TV show?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/tv_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2369.996,
+    "total_latency_s": 3333.501,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person",
+      "get /person/{param}/tv_credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find David Schwimmer's TV show(s) \u2192 rank by popularity \u2192 return top result | MAP: tmdb / GET /search/person + GET /person/{id}/tv_credits| CHAIN: GET /search/tv returns list; extract show IDs via JMESPath; then fetch top-rated shows via GET /tv/top_rated to compare popularity | COMBINE: chain: use SQL to JOIN search results with top-rated shows on showId, order by popularity (vote_average), limit to 1 | FILTER: filter by actor name in search, use vote_average for ranking, not query params | VALIDATE: \u2713 valid service_id, \u2713 URL uses correct path, \u2713 no bare placeholders, \u2713 JMESPath for extraction, \u2713 SQL for ranking and selection",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 77,
+    "query": "Who directed the third episode of the second season of Black Mirror?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1412.097,
+    "total_latency_s": 2409.629,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Black Mirror season 2 episode 3 \u2192 get director | MAP: tmdb / GET /search/tv + GET /tv/{id}/season/{id}/credits| CHAIN: get_season_episodes uses search_tv[?name=='Black Mirror'] | [0].id to fetch season data | FILTER: season 2, episode 3 via JMESPath, not query param | VALIDATE: \u2713 correct service, \u2713 no bare placeholders, \u2713 params from catalog",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 78,
+    "query": "give me some movies that Christopher Nolan known for",
+    "oracle": [
+      "GET /search/person"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 951.764,
+    "total_latency_s": 1494.05,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/person"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movies directed by Christopher Nolan \u2192 MAP: tmdb / GET /search/person| CHAIN: extract movie titles from search results via JMESPath | COMBINE: single: return titles from search results | FILTER: query param 'Christopher Nolan' matches director search | VALIDATE: \u2713 required query param, \u2713 no bare placeholders, \u2713 JMESPath for field extraction",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_person",
+          "url": "http://mock-server:8080/rest/search/person"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 79,
+    "query": "Avatar versus Avatar: The Way of Water, which has a higher rating",
+    "oracle": [
+      "GET /search/movie",
+      "GET /search/movie"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1978.568,
+    "total_latency_s": 3002.918,
+    "planned_count": 6,
+    "oracle_count": 2,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_credits",
+      "movie_reviews",
+      "person_popular",
+      "movie_videos",
+      "movie_upcoming",
+      "trending_person_day"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /search/movie"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_reviews",
+          "url": "http://mock-server:8080/rest/movie/1/reviews"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_popular",
+          "url": "http://mock-server:8080/rest/person/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_videos",
+          "url": "http://mock-server:8080/rest/movie/1/videos"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_upcoming",
+          "url": "http://mock-server:8080/rest/movie/upcoming"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_person_day",
+          "url": "http://mock-server:8080/rest/trending/person/day"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /tv/{id}/credits + GET /movie/{id}/reviews + GET /person/popular + GET /movie/{id}/videos + GET /movie/upcoming + GET /trending/person/day | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 80,
+    "query": "Show me some English movies rating no less than 7.0 and no earlier than 2021",
+    "oracle": [
+      "GET /discover/movie"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 994.541,
+    "total_latency_s": 1589.666,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "get /discover/movie"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find English movies with vote average \u22657.0 and release date \u22652021 | MAP: tmdb / GET /discover/movie| CHAIN: none | COMBINE: single | FILTER: language='en', vote_average_gte=7.0, primary_release_date_gte='2021-01-01' via GET params | VALIDATE: \u2713 all required params set, \u2713 no bare placeholders, \u2713 URL correct",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "discover_movie",
+          "url": "http://mock-server:8080/rest/discover/movie"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 81,
+    "query": "What is the genre of the movie Lord of the Ring?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1052.083,
+    "total_latency_s": 1751.855,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'Lord of the Ring' by title \u2192 extract genre | MAP: tmdb / GET /search/movie + GET /movie/{id}| CHAIN: GET /search/movie with query='Lord of the Ring' returns results, then extract genre via JMESPath | FILTER: query param matches title, no need for additional filtering | VALIDATE: \u2713 valid service, \u2713 required param 'query' provided, \u2713 genre extracted from response using JMESPath",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie",
+          "url": "http://mock-server:8080/rest/movie/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 82,
+    "query": "What is the birthday of the most popular person right now?",
+    "oracle": [
+      "GET /person/popular",
+      "GET /person/{person_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 885.922,
+    "total_latency_s": 1331.304,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /person/popular",
+      "get /person/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find most popular person | MAP: tmdb / GET /person/popular + GET /person/{id}| CHAIN: none | COMBINE: single | FILTER: popularity rank via response order, not query param | VALIDATE: \u2713 no bare placeholders, \u2713 service_id and url correct",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_popular",
+          "url": "http://mock-server:8080/rest/person/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 83,
+    "query": "give me a poster of the second season of Big Bang Theory",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1208.899,
+    "total_latency_s": 2188.946,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Big Bang Theory TV show \u2192 get second season images | MAP: tmdb / GET /search/tv + GET /tv/{id}/season/{id}/images| CHAIN: GET /search/tv query 'Big Bang Theory' \u2190 tv_id | GET /tv/{tv_id}/season/2/images | COMBINE: chain: fetch poster via tv_id from search result | FILTER: query='Big Bang Theory' matches title, season_number=2 | VALIDATE: \u2713 correct service, \u2713 required params, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_images",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 84,
+    "query": "What is the name of the third episod of the second season of Mandalorian?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}/season/{season_number}/episode/{episode_number}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1782.5,
+    "total_latency_s": 2785.461,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_latest",
+      "trending_tv_day",
+      "collection_images"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}/season/{param}/episode/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Mandalorian TV show \u2192 get its second season \u2192 find third episode of that season | MAP: tmdb / GET /movie/latest + GET /trending/tv/day + GET /collection/{id}/images| CHAIN: use search to get show ID, then fetch season 2 episodes, then extract third episode title | FILTER: match show by name 'The Mandalorian', filter season 2, select episode 3 via index | VALIDATE: \u2713 all URLs use valid endpoints, \u2713 no bare placeholders, \u2713 JMESPath for indexing, \u2713 parameters from catalog",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_latest",
+          "url": "http://mock-server:8080/rest/movie/latest"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_tv_day",
+          "url": "http://mock-server:8080/rest/trending/tv/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection_images",
+          "url": "http://mock-server:8080/rest/collection/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 85,
+    "query": "When is the bitrhday of the lead actor of the movie The Shawshank Redemptionn?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /person/{person_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2008.113,
+    "total_latency_s": 3167.665,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /person/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'The Shawshank Redemption' \u2192 get lead actor \u2192 find actor's birthday | MAP: tmdb / GET /search/movie + GET /movie/{id}/credits + GET /person/{id}| CHAIN: get_movie_id \u2190 search_movie[?title=='The Shawshank Redemption'] | [0].id | get_lead_actor_id \u2190 get_movie_credits[?cast[0].character=='Andy Dufresne'] | [0].id | get_actor_birthday \u2190 get_person[?id==lead_actor_id] | [0].birthday | COMBINE: chain: find actor birthday via chained task lookups | FILTER: title match via JMESPath, not query param; character match via JMESPath | VALIDATE: \u2713 id in path, \u2713 no bare placeholders, \u2713 all required params in url",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 86,
+    "query": "When is the birthday of the director of the movie The Shawshank Redemption?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /person/{person_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1088.778,
+    "total_latency_s": 1843.597,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /person/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find director of The Shawshank Redemption \u2192 get director's birthday | MAP: tmdb / GET /search/movie + GET /movie/{id}/credits + GET /person/{id}| CHAIN: get_movie_id \u2190 search_movie[?title=='The Shawshank Redemption'] | [0].id | COMBINE: chain: get_director_birthday uses get_movie_id to fetch movie details | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 87,
+    "query": "Where is the headquarter of the company that created the movie The Shawshank Redemption?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}",
+      "GET /company/{company_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1217.554,
+    "total_latency_s": 2252.877,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}",
+      "get /company/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'The Shawshank Redemption' \u2192 get studio/company \u2192 find company headquarters | MAP: tmdb / GET /search/movie + GET /movie/{id} + GET /company/{id}| CHAIN: get_movie_id from search_movie[?title=='The Shawshank Redemption'] | [0].id \u2192 get_company_id from get_movie_credits[?id==movie_id] | [0].production_companies[0].id | COMBINE: chain: get_company_headquarters consumes get_company via JMESPath | FILTER: title match via JMESPath, not query param | VALIDATE: \u2705 id in path, \u2705 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie",
+          "url": "http://mock-server:8080/rest/movie/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company",
+          "url": "http://mock-server:8080/rest/company/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 88,
+    "query": "Where is the headquarter of the company that created the collection Star Wars?",
+    "oracle": [
+      "GET /search/collection",
+      "GET /collection/{collection_id}",
+      "GET /company/{company_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1144.133,
+    "total_latency_s": 1926.879,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/collection",
+      "get /collection/{param}",
+      "get /company/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find collection 'Star Wars' \u2192 get its creator company \u2192 find company headquarters | MAP: tmdb / GET /search/collection + GET /collection/{id} + GET /company/{id}| CHAIN: get_collection uses query='Star Wars' | [0].id | COMBINE: chain: get_company_headquarters consumes get_collection via JMESPath | FILTER: collection name match via query param, not JMESPath; company HQ location via GET /search/company | VALIDATE: \u2713 query param for collection, \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection",
+          "url": "http://mock-server:8080/rest/collection/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company",
+          "url": "http://mock-server:8080/rest/company/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 89,
+    "query": "Who has an earlier release date, The Double Life of Veronique or Mulholland Drive?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1596.814,
+    "total_latency_s": 2581.621,
+    "planned_count": 5,
+    "oracle_count": 2,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_similar",
+      "tv_reviews",
+      "trending_person_day",
+      "collection_images",
+      "tv_season"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find release dates for two movies \u2192 compare | MAP: tmdb / GET /tv/{id}/similar + GET /tv/{id}/reviews + GET /trending/person/day + GET /collection/{id}/images + GET /tv/{id}/season/{id}| CHAIN: GET /search/collection by title, extract id, then GET /movie/latest using id | COMBINE: single: compare release_date from two movie responses | FILTER: title match via GET /search/collection, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_similar",
+          "url": "http://mock-server:8080/rest/tv/1/similar"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_reviews",
+          "url": "http://mock-server:8080/rest/tv/1/reviews"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_person_day",
+          "url": "http://mock-server:8080/rest/trending/person/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "collection_images",
+          "url": "http://mock-server:8080/rest/collection/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season",
+          "url": "http://mock-server:8080/rest/tv/1/season/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 90,
+    "query": "Is the director of Twin Peaks Season 1 and Mulholland Drive the same person?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /tv/{tv_id}/season/{season_number}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1135.325,
+    "total_latency_s": 2097.734,
+    "planned_count": 4,
+    "oracle_count": 4,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/tv",
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /tv/{param}/season/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find director of Twin Peaks Season 1 and Mulholland Drive \u2192 compare directors | MAP: tmdb / GET /search/tv + GET /search/movie + GET /movie/{id}/credits + GET /tv/{id}/season/{id}/credits| CHAIN: get_twin_peaks_id from search_tv[?name=='Twin Peaks'] | [0].id, get_mulholland_id from search_movie[?title=='Mulholland Drive'] | [0].id | COMBINE: chain: get_director uses twin_peaks_id and mulholland_id via SQL to compare | FILTER: name and title match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_tv",
+          "url": "http://mock-server:8080/rest/search/tv"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 91,
+    "query": "Where was the director of Mulholland Drive born?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /person/{person_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1173.652,
+    "total_latency_s": 2001.281,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /person/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find director of Mulholland Drive \u2192 get director's birthplace | MAP: tmdb / GET /search/movie + GET /movie/{id}/credits + GET /person/{id}| CHAIN: GET /search/movie query 'Mulholland Drive' \u2190 results[0].id | COMBINE: chain: get_movie_details consumes search_movie via JMESPath | FILTER: title match via query param, not JMESPath | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person",
+          "url": "http://mock-server:8080/rest/person/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 92,
+    "query": "Is Mulholland Drive in the Top-10 rated list of the TMDB?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/top_rated"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 979.131,
+    "total_latency_s": 1551.085,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/top_rated"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: check if Mulholland Drive is in top-10 rated movies | MAP: tmdb / GET /search/movie + GET /movie/top_rated| CHAIN: JMESPath to extract title from results | FILTER: title match for 'Mulholland Drive' via JMESPath | VALIDATE: \u2713 top_rated movies fetched, \u2713 title compared via JMESPath, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_top_rated",
+          "url": "http://mock-server:8080/rest/movie/top_rated"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 93,
+    "query": "Who directed more movies, Akira Kurosawa or Spielberg?",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}/movie_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1562.685,
+    "total_latency_s": 2611.557,
+    "planned_count": 6,
+    "oracle_count": 2,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "movie_recommendations",
+      "tv_season",
+      "movie_reviews",
+      "movie_images",
+      "trending_movie_day",
+      "movie_latest"
+    ],
+    "oracle_missed": [
+      "get /search/person",
+      "get /person/{param}/movie_credits"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_recommendations",
+          "url": "http://mock-server:8080/rest/movie/1/recommendations"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season",
+          "url": "http://mock-server:8080/rest/tv/1/season/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_reviews",
+          "url": "http://mock-server:8080/rest/movie/1/reviews"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_images",
+          "url": "http://mock-server:8080/rest/movie/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "trending_movie_day",
+          "url": "http://mock-server:8080/rest/trending/movie/day"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_latest",
+          "url": "http://mock-server:8080/rest/movie/latest"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /movie/{id}/recommendations + GET /tv/{id}/season/{id} + GET /movie/{id}/reviews + GET /movie/{id}/images + GET /trending/movie/day + GET /movie/latest | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 94,
+    "query": "What TV series has the director of Mulholland Drive directed?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /person/{person_id}/tv_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1455.929,
+    "total_latency_s": 2516.064,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /person/{param}/tv_credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find director of Mulholland Drive \u2192 find TV series directed by same person | MAP: tmdb / GET /search/movie + GET /person/{id}/tv_credits| CHAIN: GET /search/movie with query 'Mulholland Drive' \u2190 get_director | [0].director_id | COMBINE: chain: fetch TV series by director_id via /search/tv | FILTER: director match via JMESPath, not query param | VALIDATE: \u2713 query param 'query' used, \u2713 no bare placeholders, \u2713 service_id correct",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_tv_credits",
+          "url": "http://mock-server:8080/rest/person/1/tv_credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 95,
+    "query": "Tell me about actor Scarlett Johansson's birthday",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{person_id}"
+    ],
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
+    "http_status": 200,
+    "planning_latency_s": 855.969,
+    "total_latency_s": 1323.869,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_images",
+      "tv_credits",
+      "movie_popular",
+      "company"
+    ],
+    "oracle_missed": [
+      "get /search/person",
+      "get /person/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "No available service can fulfil this request. | MAP: tmdb / GET /tv/{id}/images + GET /tv/{id}/credits + GET /movie/popular + GET /company/{id}",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_images",
+          "url": "http://mock-server:8080/rest/tv/1/images"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_credits",
+          "url": "http://mock-server:8080/rest/tv/1/credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_popular",
+          "url": "http://mock-server:8080/rest/movie/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "company",
+          "url": "http://mock-server:8080/rest/company/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 96,
+    "query": "How many seasons of Sword Art Online are there?",
+    "oracle": [
+      "GET /search/tv",
+      "GET /tv/{tv_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1010.411,
+    "total_latency_s": 1588.623,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "search_collection",
+      "movie_now_playing",
+      "movie_upcoming",
+      "tv_season_episode_credits"
+    ],
+    "oracle_missed": [
+      "get /search/tv",
+      "get /tv/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Sword Art Online TV show \u2192 count its seasons | MAP: tmdb / GET /search/collection + GET /movie/now_playing + GET /movie/upcoming + GET /tv/{id}/season/{id}/episode/{id}/credits| CHAIN: JMESPath to extract first match from search results | COMBINE: single task: count seasons via SQL on results | FILTER: title match via JMESPath, not query param | VALIDATE: \u2713 title match, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_collection",
+          "url": "http://mock-server:8080/rest/search/collection"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_now_playing",
+          "url": "http://mock-server:8080/rest/movie/now_playing"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_upcoming",
+          "url": "http://mock-server:8080/rest/movie/upcoming"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode_credits",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 97,
+    "query": "Are Yui Aragaki and Gen Hoshino co-starring in We Married as Job?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1242.208,
+    "total_latency_s": 2151.405,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/credits"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie 'We Married as Job' | MAP: tmdb / GET /search/movie + GET /movie/{id}/credits| CHAIN: extract movie id from search results | COMBINE: fetch cast via movie id | FILTER: check if Yui Aragaki and Gen Hoshino are in cast | VALIDATE: \u2713 search uses query param, \u2713 cast check via JMESPath, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_credits",
+          "url": "http://mock-server:8080/rest/movie/1/credits"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 98,
+    "query": "Who is older, by how many years, the director of film Barbie or the lead actor of television DEATH NOTE?",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/credits",
+      "GET /search/tv",
+      "GET /tv/{tv_id}/credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 3084.809,
+    "total_latency_s": 3582.53,
+    "planned_count": 7,
+    "oracle_count": 4,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_popular",
+      "person_movie_credits",
+      "movie_recommendations",
+      "tv_season_episode",
+      "search_company",
+      "movie_keywords",
+      "person_images"
+    ],
+    "oracle_missed": [
+      "get /search/movie",
+      "get /movie/{param}/credits",
+      "get /search/tv",
+      "get /tv/{param}/credits"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_popular",
+          "url": "http://mock-server:8080/rest/tv/popular"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_movie_credits",
+          "url": "http://mock-server:8080/rest/person/1/movie_credits"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_recommendations",
+          "url": "http://mock-server:8080/rest/movie/1/recommendations"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_company",
+          "url": "http://mock-server:8080/rest/search/company"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_keywords",
+          "url": "http://mock-server:8080/rest/movie/1/keywords"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "person_images",
+          "url": "http://mock-server:8080/rest/person/1/images"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: tmdb / GET /tv/popular + GET /person/{id}/movie_credits + GET /movie/{id}/recommendations + GET /tv/{id}/season/{id}/episode/{id} + GET /search/company + GET /movie/{id}/keywords + GET /person/{id}/images | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 99,
+    "query": "Tell me about Katherine LaNasa's latest movie appearance.",
+    "oracle": [
+      "GET /search/person",
+      "GET /person/{movie_id}/movie_credits"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1084.387,
+    "total_latency_s": 1908.249,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "tv_season_episode",
+      "movie_videos",
+      "tv_keywords"
+    ],
+    "oracle_missed": [
+      "get /search/person",
+      "get /person/{param}/movie_credits"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Katherine LaNasa in movie cast \u2192 get her latest movie appearance | MAP: tmdb / GET /tv/{id}/season/{id}/episode/{id} + GET /movie/{id}/videos + GET /tv/{id}/keywords| CHAIN: GET /search/movie query \u2190 Katherine LaNasa, extract movie IDs from results, then fetch latest movie via GET /movie/latest | COMBINE: chain: latest_movie uses get_movie_by_actor via JMESPath to find matching film | FILTER: query param 'Katherine LaNasa' in /search/movie, no bare placeholders | VALIDATE: \u2713 query uses required param, \u2713 GET /movie/latest returns single latest movie",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_season_episode",
+          "url": "http://mock-server:8080/rest/tv/1/season/1/episode/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_videos",
+          "url": "http://mock-server:8080/rest/movie/1/videos"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "tv_keywords",
+          "url": "http://mock-server:8080/rest/tv/1/keywords"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 100,
+    "query": "Give me one cover image of the movie Oppenheimer.",
+    "oracle": [
+      "GET /search/movie",
+      "GET /movie/{movie_id}/images"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 947.46,
+    "total_latency_s": 1484.344,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search/movie",
+      "get /movie/{param}/images"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find movie Oppenheimer by title | MAP: tmdb / GET /search/movie + GET /movie/{id}/images| CHAIN: get search results via query parameter | FILTER: title match via JMESPath on results | VALIDATE: \u2713 response includes poster_path, \u2713 required query param passed",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "search_movie",
+          "url": "http://mock-server:8080/rest/search/movie"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "tmdb",
+          "task_name": "movie_images",
+          "url": "http://mock-server:8080/rest/movie/1/images"
+        }
+      ]
+    },
+    "execution_results": []
+  }
+]

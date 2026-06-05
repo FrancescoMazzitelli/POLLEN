@@ -8,7 +8,7 @@
       "POST /users/{user_id}/playlists",
       "POST /playlists/{playlist_id}/tracks"
     ],
-    "error": "Empty plan (MOCK mode — Designer skipped)",
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
     "http_status": 200,
     "planning_latency_s": 1055.103,
     "total_latency_s": 1392.256,
@@ -102,7 +102,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request needs to add the first song from The Dark Side of the Moon to the playback queue. The available endpoints include /me/player/queue, which can be used to add items to the queue. The service is already configured for playback queue actions, so we can proceed directly with the required parameters.",
+      "reasoning": "The request needs to add the first song from The Dark Side of the Moon to the playback queue. The available endpoints include /me/player/queue, which can be used to add items to the queue. The service is already configured for playback queue actions, so we can proceed directly with the required parameters. | MAP: spotify / POST /me/player/queue",
       "tasks": [
         {
           "input": {
@@ -179,7 +179,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request is to add 'Summertime Sadness' by Lana Del Rey to the user's first playlist. The available services include a Spotify API endpoint. The user needs to query the existing playlist to find a track that matches the desired song, then add it to the playlist. The JSON execution plan includes a GET request to retrieve the playlist data, a PUT request to add the track, and ensure proper formatting of parameters.",
+      "reasoning": "The request is to add 'Summertime Sadness' by Lana Del Rey to the user's first playlist. The available services include a Spotify API endpoint. The user needs to query the existing playlist to find a track that matches the desired song, then add it to the playlist. The JSON execution plan includes a GET request to retrieve the playlist data, a PUT request to add the track, and ensure proper formatting of parameters. | MAP: spotify / GET /me/playlists + GET /me/player/currently-playing + PUT /me/playlists/{{get_matching_track[?id]}}",
       "tasks": [
         {
           "input": "{}",
@@ -252,7 +252,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The request specifies to skip to the next track and set the volume to 60. The available services include a Spotify API endpoint that can handle these actions. The GET /me/player/next service can be used to skip tracks, and the PUT /me/player/volume service can set the playback volume. The parameters for volume should be set as {volume_percent:60} to satisfy the request.",
+      "reasoning": "The request specifies to skip to the next track and set the volume to 60. The available services include a Spotify API endpoint that can handle these actions. The GET /me/player/next service can be used to skip tracks, and the PUT /me/player/volume service can set the playback volume. The parameters for volume should be set as {volume_percent:60} to satisfy the request. | MAP: spotify / POST /me/player/next + PUT /me/player/volume",
       "tasks": [
         {
           "input": {},
@@ -315,7 +315,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the /me/player/currently-playing endpoint, which allows adding a song to the user's music collection. The service is already set up, so a simple PUT operation can be performed.",
+      "reasoning": "The request can be fulfilled by using the /me/player/currently-playing endpoint, which allows adding a song to the user's music collection. The service is already set up, so a simple PUT operation can be performed. | MAP: spotify / PUT /me/player/currently-playing",
       "tasks": [
         {
           "input": {
@@ -412,7 +412,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "To append the first song of the newest album of the user's following first artist to their queue, first get the playlist of songs, filter to find the newest album's first song, and add it to the queue using the PUT operation.",
+      "reasoning": "To append the first song of the newest album of the user's following first artist to their queue, first get the playlist of songs, filter to find the newest album's first song, and add it to the queue using the PUT operation. | MAP: spotify / GET /me/player/queue + GET /me/player/queue + PUT /me/player/queue",
       "tasks": [
         {
           "input": "",
@@ -543,7 +543,7 @@
       "GET /search",
       "PUT /me/player/play"
     ],
-    "error": "Empty plan (MOCK mode — Designer skipped)",
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
     "http_status": 200,
     "planning_latency_s": 464.082,
     "total_latency_s": 995.675,
@@ -674,7 +674,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find song with artist name 'Taylor Swift' → map to endpoint /search ← get_tracks_tracks[?artist.name='Taylor Swift'] ← [0].item.id ← chain: set_repeat ← set_state:repeat",
+      "reasoning": "DECOMPOSE: find song with artist name 'Taylor Swift' \u2192 map to endpoint /search \u2190 get_tracks_tracks[?artist.name='Taylor Swift'] \u2190 [0].item.id \u2190 chain: set_repeat \u2190 set_state:repeat | MAP: spotify / GET /search + PUT /me/player/pause",
       "tasks": [
         {
           "input": "{q=artist.name='Taylor Swift'}",
@@ -744,7 +744,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find album Mojito → map endpoint /album | chain: get /me/albums | filter: ?albumName == 'Mojito' | validate: ok",
+      "reasoning": "DECOMPOSE: find album Mojito \u2192 map endpoint /album | chain: get /me/albums | filter: ?albumName == 'Mojito' | validate: ok | MAP: spotify / GET /me/albums + POST /me/album/2024/{id}/0",
       "tasks": [
         {
           "input": "{?albumName == 'Mojito'}",
@@ -806,7 +806,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The request to rename a playlist can be fulfilled using the GET /me/playlists endpoint, which allows specifying the name of the playlist to rename. By providing the new name in the request parameters, we can chain the GET operation with the PUT operation to update the playlist name.",
+      "reasoning": "The request to rename a playlist can be fulfilled using the GET /me/playlists endpoint, which allows specifying the name of the playlist to rename. By providing the new name in the request parameters, we can chain the GET operation with the PUT operation to update the playlist name. | MAP: spotify / GET /me/playlists + PUT /playlists/{playlist_id}",
       "tasks": [
         {
           "input": {},
@@ -873,7 +873,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the DELETE /me/following endpoint with the parameters provided. The DELETE operation can be used to remove the following artist from the currently playing music.",
+      "reasoning": "The request can be fulfilled by using the DELETE /me/following endpoint with the parameters provided. The DELETE operation can be used to remove the following artist from the currently playing music. | MAP: spotify / DELETE /me/following",
       "tasks": [
         {
           "input": "{type:str*}",
@@ -993,7 +993,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled with the available services and endpoints. The services provide the necessary endpoints for adding songs from the current playing queue to a new playlist called 'Current'. The GET /search endpoint can be used to search for tracks, artists, and albums, and the POST /me/player/queue endpoint can be used to add items to the playback queue. The required parameters for the POST request are URI.",
+      "reasoning": "The request can be fulfilled with the available services and endpoints. The services provide the necessary endpoints for adding songs from the current playing queue to a new playlist called 'Current'. The GET /search endpoint can be used to search for tracks, artists, and albums, and the POST /me/player/queue endpoint can be used to add items to the playback queue. The required parameters for the POST request are URI. | MAP: spotify / POST /me/player/queue",
       "tasks": [
         {
           "input": {
@@ -1038,7 +1038,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'What is the name of the song I playing right now?' requires interacting with the Spotify player. The GET /me/player/currently-playing endpoint directly supports this operation with the appropriate parameters.",
+      "reasoning": "The user request 'What is the name of the song I playing right now?' requires interacting with the Spotify player. The GET /me/player/currently-playing endpoint directly supports this operation with the appropriate parameters. | MAP: spotify / GET /me/player/currently-playing",
       "tasks": [
         {
           "input": {},
@@ -1090,7 +1090,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request to remove the first album from the user's music is valid and can be fulfilled using the provided services. The DELETE endpoint '/me/albums' allows removing albums, and the service is set up to handle this task.",
+      "reasoning": "The request to remove the first album from the user's music is valid and can be fulfilled using the provided services. The DELETE endpoint '/me/albums' allows removing albums, and the service is set up to handle this task. | MAP: spotify / DELETE /me/albums",
       "tasks": [
         {
           "input": "{album:items[0]}",
@@ -1133,7 +1133,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'Show me the albums I saved' relates to album management. The GET /me/albums endpoint can be used to retrieve or modify the user's saved albums.",
+      "reasoning": "The user request 'Show me the albums I saved' relates to album management. The GET /me/albums endpoint can be used to retrieve or modify the user's saved albums. | MAP: spotify / GET /me/albums",
       "tasks": [
         {
           "input": {},
@@ -1201,7 +1201,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "To follow the artist of the song currently playing on Spotify, first retrieve the current track details using the /me/player/currently-playing endpoint, then extract the artist name from the response schema.",
+      "reasoning": "To follow the artist of the song currently playing on Spotify, first retrieve the current track details using the /me/player/currently-playing endpoint, then extract the artist name from the response schema. | MAP: spotify / GET /me/player/currently-playing + GET /me/player/currently-playing",
       "tasks": [
         {
           "input": "",
@@ -1260,7 +1260,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find music currently playing \nMAP: get me/player/currently-playing \nCHAIN: get me/player/currently-playing\nCOMBINE: chain: music\nFILTER: genre match via JMESPath, not query param\nVALIDATE: ✓ genre in path, ✓ no bare placeholders",
+      "reasoning": "DECOMPOSE: find music currently playing \nMAP: spotify / GET /me/player/currently-playing",
       "tasks": [
         {
           "input": "{is_playing:bool, item.id:str, item.name:str, item.artists:arr, item.album.id:str, item.album.name:str}",
@@ -1328,7 +1328,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The first track in The Beatles' newest album can be found by searching for tracks in the search endpoint and then selecting the first track from the search results, which would be added to the 'My Rock' playlist.",
+      "reasoning": "The first track in The Beatles' newest album can be found by searching for tracks in the search endpoint and then selecting the first track from the search results, which would be added to the 'My Rock' playlist. | MAP: spotify / GET /search",
       "tasks": [
         {
           "input": "{q: The Beatle's newest album}",
@@ -1426,7 +1426,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'Who is my favorite artist?' requires retrieving the user's top items. The GET /me/top/{type} endpoint provides access to the user's personalized top artists or tracks.",
+      "reasoning": "The user request 'Who is my favorite artist?' requires retrieving the user's top items. The GET /me/top/{type} endpoint provides access to the user's personalized top artists or tracks. | MAP: spotify / GET /me/top/{type}",
       "tasks": [
         {
           "input": {},
@@ -1482,7 +1482,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request is to find a song of a favorite artist, which requires a query service. The available services include GET /me/player/currently-playing and GET /search. The query service is not provided in the catalog, so a GET task is needed.",
+      "reasoning": "The request is to find a song of a favorite artist, which requires a query service. The available services include GET /me/player/currently-playing and GET /search. The query service is not provided in the catalog, so a GET task is needed. | MAP: spotify / GET /me/player/currently-playing",
       "tasks": [
         {
           "input": {},
@@ -1553,7 +1553,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled with the provided services and endpoints. The DELETE /me/albums and DELETE /me/tracks endpoints can be used to remove music from the user's 'My R&B' playlist, and the GET /search endpoint can be used to search for tracks, artists, albums. The DELETE operation can be used in conjunction with the GET /search endpoint to perform the required action.",
+      "reasoning": "The request can be fulfilled with the provided services and endpoints. The DELETE /me/albums and DELETE /me/tracks endpoints can be used to remove music from the user's 'My R&B' playlist, and the GET /search endpoint can be used to search for tracks, artists, albums. The DELETE operation can be used in conjunction with the GET /search endpoint to perform the required action. | MAP: spotify / DELETE /me/albums + PUT /me/playlists",
       "tasks": [
         {
           "input": "{?album.id, ?album.name, ?album.artist, ?album.contentType}",
@@ -1608,7 +1608,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find song currently playing → map to album endpoint | chain: get album info | filter: current player tracks | combine: get album details",
+      "reasoning": "DECOMPOSE: find song currently playing \u2192 map to album endpoint | chain: get album info | filter: current player tracks | combine: get album details",
       "tasks": []
     },
     "execution_results": []
@@ -1656,7 +1656,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the PUT operation on the 'device' endpoint, specifying the device ID 'My PC' in the request parameters. The service is already set up to handle device operations, so no additional checks or validation are needed.",
+      "reasoning": "The request can be fulfilled by using the PUT operation on the 'device' endpoint, specifying the device ID 'My PC' in the request parameters. The service is already set up to handle device operations, so no additional checks or validation are needed. | MAP: spotify / PUT /me/player/devices/My PC/pause",
       "tasks": [
         {
           "input": {
@@ -1726,7 +1726,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the PUT endpoint for the /me/player/pause and the GET endpoint for /me/player/currently-playing to get the playback state and track information respectively. The provided service endpoints are correctly mapped and can be used in a chain of operations.",
+      "reasoning": "The request can be fulfilled by using the PUT endpoint for the /me/player/pause and the GET endpoint for /me/player/currently-playing to get the playback state and track information respectively. The provided service endpoints are correctly mapped and can be used in a chain of operations. | MAP: spotify / POST /me/player/next + PUT /me/player/pause",
       "tasks": [
         {
           "input": {
@@ -1833,7 +1833,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled with the available services and endpoints. The required service is 'spotify' with GET /me/following. The task needs to retrieve the first following artist's details and recommend more artists.",
+      "reasoning": "The request can be fulfilled with the available services and endpoints. The required service is 'spotify' with GET /me/following. The task needs to retrieve the first following artist's details and recommend more artists. | MAP: spotify / GET /me/following + GET /artists/{id}/related-artists",
       "tasks": [
         {
           "input": {},
@@ -1908,7 +1908,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request requires a service to unfollow an artist and skip to the next song. The relevant service is Spotify, which provides the functionality to follow or unfollow artists.",
+      "reasoning": "The request requires a service to unfollow an artist and skip to the next song. The relevant service is Spotify, which provides the functionality to follow or unfollow artists. | MAP: spotify / DELETE /me/following + PUT /me/player/next",
       "tasks": [
         {
           "input": {
@@ -1969,7 +1969,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find user following Taylor Swift → set follow ← get_following_users[?username=='Taylor Swift'] | COMBINE: chain: follow_users consumes followings via JMESPath | FILTER: username match via JMESPath, not query param | VALIDATE: ✓ username in path, ✓ no bare placeholders",
+      "reasoning": "DECOMPOSE: find user following Taylor Swift \u2192 set follow \u2190 get_following_users[?username=='Taylor Swift'] | COMBINE: chain: follow_users consumes followings via JMESPath | FILTER: username match via JMESPath, not query param | VALIDATE: \u2713 username in path, \u2713 no bare placeholders",
       "tasks": []
     },
     "execution_results": []
@@ -2037,7 +2037,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the Spotify API endpoints. The relevant GET endpoint is /artists/{id}/top-tracks. The parameters include {id}, which can be used to retrieve the artist's top tracks. Once the data is retrieved, it can be used to create a new playlist called 'My Top'. The SQL or JMESPath chain can be used to chain the necessary operations to create and add tracks to the playlist.",
+      "reasoning": "The request can be fulfilled by using the Spotify API endpoints. The relevant GET endpoint is /artists/{id}/top-tracks. The parameters include {id}, which can be used to retrieve the artist's top tracks. Once the data is retrieved, it can be used to create a new playlist called 'My Top'. The SQL or JMESPath chain can be used to chain the necessary operations to create and add tracks to the playlist. | MAP: spotify / GET /me/top/{type} + GET /me + POST /users/{user_id}/playlists + POST /playlists/{playlist_id}/tracks",
       "tasks": [
         {
           "input": {},
@@ -2129,7 +2129,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: <data> | MAP: <svc/endpoint> | CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok",
+      "reasoning": "DECOMPOSE: <data> | MAP: spotify / GET /me/albums + POST /me/player/next| CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok",
       "tasks": [
         {
           "input": "{?q='My Rock'}",
@@ -2248,7 +2248,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: <data> | MAP: <svc/endpoint> | CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok",
+      "reasoning": "DECOMPOSE: <data> | MAP: spotify / GET /search| CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok",
       "tasks": [
         {
           "input": "{q:My R&B}",
@@ -2319,7 +2319,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The user wants to remove the second track from their R&B playlist using Spotify's API. The available endpoints include DELETE /me/albums and DELETE /me/tracks. The user needs to make two DELETE requests: one to remove the first track and another to remove the second track. The URL format for DELETE requests is http://mock-server:8080/rest/me/...{endpoint}. The task should be chained with two separate DELETE operations.",
+      "reasoning": "The user wants to remove the second track from their R&B playlist using Spotify's API. The available endpoints include DELETE /me/albums and DELETE /me/tracks. The user needs to make two DELETE requests: one to remove the first track and another to remove the second track. The URL format for DELETE requests is http://mock-server:8080/rest/me/...{endpoint}. The task should be chained with two separate DELETE operations. | MAP: spotify / DELETE /me/albums + DELETE /me/tracks",
       "tasks": [
         {
           "input": "{?album.id='V'}",
@@ -2386,7 +2386,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: <data> | MAP: <svc/endpoint> | CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok",
+      "reasoning": "DECOMPOSE: <data> | MAP: spotify / DELETE /me/tracks + DELETE /me/albums| CHAIN: none|JMESPath|SQL | COMBINE: single|chain|sql | FILTER: <params> | VALIDATE: ok",
       "tasks": [
         {
           "input": "{id: 'track_3'}",
@@ -2457,7 +2457,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the GET /me/following endpoint with the parameters {type:str*} and the parameters {q:str*} as required in the query. The service should return the artists involved in the song when You Believe.",
+      "reasoning": "The request can be fulfilled by using the GET /me/following endpoint with the parameters {type:str*} and the parameters {q:str*} as required in the query. The service should return the artists involved in the song when You Believe. | MAP: spotify / GET /me/following",
       "tasks": [
         {
           "input": "{type:str*, q:str*}",
@@ -2500,7 +2500,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'Skip to the next track' requires interacting with the Spotify player. The POST /me/player/next endpoint directly supports this operation with the appropriate parameters.",
+      "reasoning": "The user request 'Skip to the next track' requires interacting with the Spotify player. The POST /me/player/next endpoint directly supports this operation with the appropriate parameters. | MAP: spotify / POST /me/player/next",
       "tasks": [
         {
           "input": {},
@@ -2563,7 +2563,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The user wants to play their playlist 'My Rock'. The service available for this is the 'search' endpoint, which can be used to find tracks, artists, or albums. The response schema includes tracks, so the first task should be to search for 'My Rock' using the 'search' endpoint. Once the playlist is found, the next task should be to play that track using the 'player' endpoint. However, since the query is about a playlist, not a track, there might be a need to check the response schema for possible adjustments. If the search result includes a track named 'My Rock', then the next step is to use the 'player' endpoint with that track's details.",
+      "reasoning": "The user wants to play their playlist 'My Rock'. The service available for this is the 'search' endpoint, which can be used to find tracks, artists, or albums. The response schema includes tracks, so the first task should be to search for 'My Rock' using the 'search' endpoint. Once the playlist is found, the next task should be to play that track using the 'player' endpoint. However, since the query is about a playlist, not a track, there might be a need to check the response schema for possible adjustments. If the search result includes a track named 'My Rock', then the next step is to use the 'player' endpoint with that track's details. | MAP: spotify / GET /search + GET /me/player/currently-playing",
       "tasks": [
         {
           "input": "{q='My Rock'}",
@@ -2649,7 +2649,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the GET /me/albums endpoint for removing saved albums and the GET /me/following endpoint for canceling following singers. The provided service endpoints match the required operations.",
+      "reasoning": "The request can be fulfilled by using the GET /me/albums endpoint for removing saved albums and the GET /me/following endpoint for canceling following singers. The provided service endpoints match the required operations. | MAP: spotify / DELETE /me/albums + GET /me/albums",
       "tasks": [
         {
           "input": {},
@@ -2676,7 +2676,7 @@
       "GET /me",
       "POST /users/{user_id}/playlists"
     ],
-    "error": "Empty plan (MOCK mode — Designer skipped)",
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
     "http_status": 200,
     "planning_latency_s": 702.087,
     "total_latency_s": 2217.94,
@@ -2739,7 +2739,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'Turn down the volume to 20' requires interacting with the Spotify player. The PUT /me/player/volume endpoint directly supports this operation with the appropriate parameters.",
+      "reasoning": "The user request 'Turn down the volume to 20' requires interacting with the Spotify player. The PUT /me/player/volume endpoint directly supports this operation with the appropriate parameters. | MAP: spotify / PUT /me/player/volume",
       "tasks": [
         {
           "input": {},
@@ -2782,7 +2782,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'Set the single track repeat mode' requires interacting with the Spotify player. The PUT /me/player/repeat endpoint directly supports this operation with the appropriate parameters.",
+      "reasoning": "The user request 'Set the single track repeat mode' requires interacting with the Spotify player. The PUT /me/player/repeat endpoint directly supports this operation with the appropriate parameters. | MAP: spotify / PUT /me/player/repeat",
       "tasks": [
         {
           "input": {},
@@ -2847,7 +2847,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the POST /me/player/pause endpoint to pause playback, and the PUT /me/player/volume endpoint to increase the volume, and the POST /me/player/next endpoint to switch to the next song.",
+      "reasoning": "The request can be fulfilled by using the POST /me/player/pause endpoint to pause playback, and the PUT /me/player/volume endpoint to increase the volume, and the POST /me/player/next endpoint to switch to the next song. | MAP: spotify / PUT /me/player/pause + PUT /me/player/volume + POST /me/player/next",
       "tasks": [
         {
           "input": {
@@ -2936,7 +2936,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find bigbang album → map to endpoint /me/albums | chain to get album details | filter by name and limit results | validate response",
+      "reasoning": "DECOMPOSE: find bigbang album \u2192 map to endpoint /me/albums | chain to get album details | filter by name and limit results | validate response | MAP: spotify / GET /me/albums + GET /me/albums",
       "tasks": [
         {
           "input": "{?album.name == 'BIGBANG'}",
@@ -2999,7 +2999,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "DECOMPOSE: find artist of album Mojito → set follow ← get_follows ← get_following ← filter by album_id ← match ← find artist",
+      "reasoning": "DECOMPOSE: find artist of album Mojito \u2192 set follow \u2190 get_follows \u2190 get_following \u2190 filter by album_id \u2190 match \u2190 find artist",
       "tasks": []
     },
     "execution_results": []
@@ -3013,7 +3013,7 @@
       "PUT /me/player/play",
       "PUT /me/player/repeat"
     ],
-    "error": "Empty plan (MOCK mode — Designer skipped)",
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
     "http_status": 200,
     "planning_latency_s": 602.844,
     "total_latency_s": 1119.479,
@@ -3069,7 +3069,7 @@
       "GET /search",
       "POST /playlists/{playlist_id}/tracks"
     ],
-    "error": "Empty plan (MOCK mode — Designer skipped)",
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
     "http_status": 200,
     "planning_latency_s": 756.564,
     "total_latency_s": 1172.048,
@@ -3163,7 +3163,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request can be fulfilled by using the DELETE endpoint with the appropriate parameters, ensuring that all songs are removed from the first playlist.",
+      "reasoning": "The request can be fulfilled by using the DELETE endpoint with the appropriate parameters, ensuring that all songs are removed from the first playlist. | MAP: spotify / DELETE /playlists/{playlist_id}/tracks",
       "tasks": [
         {
           "input": "{playlist_id}",
@@ -3227,7 +3227,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The user wants to make their first playlist private. The available services include GET /me/playlist, which allows setting a private flag. Using the GET endpoint with a query parameter can set the private flag.",
+      "reasoning": "The user wants to make their first playlist private. The available services include GET /me/playlist, which allows setting a private flag. Using the GET endpoint with a query parameter can set the private flag. | MAP: spotify / PUT /me/playlist",
       "tasks": [
         {
           "input": {
@@ -3285,7 +3285,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request to add an album to the music library can be fulfilled by a GET request to the /me/albums endpoint, which allows adding a new album to the user's saved albums list.",
+      "reasoning": "The request to add an album to the music library can be fulfilled by a GET request to the /me/albums endpoint, which allows adding a new album to the user's saved albums list. | MAP: spotify / POST /me/albums",
       "tasks": [
         {
           "input": {
@@ -3355,7 +3355,7 @@
       }
     ],
     "execution_plan": {
-      "reasoning": "The request requires accessing the Spotify API endpoints, specifically the /me/player/queue endpoint to add a song to the queue and enable single song repeat mode. The user wants to add the first song from their music library to the playback queue.",
+      "reasoning": "The request requires accessing the Spotify API endpoints, specifically the /me/player/queue endpoint to add a song to the queue and enable single song repeat mode. The user wants to add the first song from their music library to the playback queue. | MAP: spotify / POST /me/player/queue + PUT /me/player/pause",
       "tasks": [
         {
           "input": {
@@ -3385,7 +3385,7 @@
     "oracle": [
       "GET /me"
     ],
-    "error": "Empty plan (MOCK mode — Designer skipped)",
+    "error": "Empty plan (MOCK mode \u2014 Designer skipped)",
     "http_status": 200,
     "planning_latency_s": 540.245,
     "total_latency_s": 825.094,
@@ -3409,7 +3409,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'What is my user name?' requires retrieving the current user's profile information. The GET /me endpoint provides access to the authenticated user's details.",
+      "reasoning": "The user request 'What is my user name?' requires retrieving the current user's profile information. The GET /me endpoint provides access to the authenticated user's details. | MAP: spotify / GET /me",
       "tasks": [
         {
           "input": {},
@@ -3452,7 +3452,7 @@
     "mismatches": [],
     "oracle_missed": [],
     "execution_plan": {
-      "reasoning": "The user request 'Pause the player' requires interacting with the Spotify player. The PUT /me/player/pause endpoint directly supports this operation with the appropriate parameters.",
+      "reasoning": "The user request 'Pause the player' requires interacting with the Spotify player. The PUT /me/player/pause endpoint directly supports this operation with the appropriate parameters. | MAP: spotify / PUT /me/player/pause",
       "tasks": [
         {
           "input": {},

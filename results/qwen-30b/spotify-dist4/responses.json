@@ -1,0 +1,3375 @@
+[
+  {
+    "query_index": 1,
+    "query": "Make me a playlist containing three songs of Mariah Carey and name it 'Love Mariah'",
+    "oracle": [
+      "GET /search",
+      "GET /me",
+      "POST /users/{user_id}/playlists",
+      "POST /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1526.118,
+    "total_latency_s": 3043.271,
+    "planned_count": 8,
+    "oracle_count": 4,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "playlists_tracks",
+      "playlists",
+      "search",
+      "me_top",
+      "me_player_repeat",
+      "users_playlists",
+      "me_following",
+      "me_player_devices"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /me",
+      "post /users/{param}/playlists",
+      "post /playlists/{param}/tracks"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: search for Mariah Carey tracks \u2192 select three tracks \u2192 create playlist with those tracks | MAP: spotify / DELETE /playlists/{id}/tracks + GET /playlists/{id} + GET /search + GET /me/top/{id} + PUT /me/player/repeat + POST /users/{id}/playlists + DELETE /me/following + GET /me/player/devices| CHAIN: GET /search q='Mariah Carey' type='track' \u2190 task[0] | [0].items[0:3] \u2190 task[1] | COMBINE: playlist creation via POST with track IDs from search result | FILTER: limit to three tracks via JMESPath slice, not query param | VALIDATE: \u2713 valid user_id placeholder, \u2713 no bare placeholders, \u2713 required params in POST | OPERATION: GET for search, POST for playlist creation",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "users_playlists",
+          "url": "http://mock-server:8080/rest/users/1/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 2,
+    "query": "Add the first song of The Dark Side of the Moon in my playback queue",
+    "oracle": [
+      "GET /search",
+      "GET /albums/{id}/tracks",
+      "POST /me/player/queue"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1089.685,
+    "total_latency_s": 2512.439,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists",
+      "users_playlists",
+      "me_tracks",
+      "me_player_queue",
+      "me_player_play"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /albums/{param}/tracks",
+      "post /me/player/queue"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find album 'The Dark Side of the Moon' \u2192 get first track \u2192 add to queue | MAP: spotify / GET /artists/{id} + POST /users/{id}/playlists + GET /me/tracks + GET /me/player/queue + PUT /me/player/play| CHAIN: GET /me/playlists filters by album name via JMESPath | COMBINE: track URI from album track list, then POST to /me/player/queue | FILTER: album name 'The Dark Side of the Moon' in playlist items, first track via JMESPath | VALIDATE: \u2713 track URI in POST body, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists",
+          "url": "http://mock-server:8080/rest/artists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "users_playlists",
+          "url": "http://mock-server:8080/rest/users/1/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 3,
+    "query": "Add Summertime Sadness by Lana Del Rey in my first playlist",
+    "oracle": [
+      "GET /search",
+      "GET /me/playlists",
+      "POST /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1390.642,
+    "total_latency_s": 3044.384,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search",
+      "get /me/playlists",
+      "post /playlists/{param}/tracks"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find track 'Summertime Sadness' by Lana Del Rey \u2192 get playlist ID of first playlist | MAP: spotify / GET /search + GET /me/playlists + POST /playlists/{id}/tracks| CHAIN: search result \u2192 track id via JMESPath | COMBINE: use track id and playlist id in POST /me/playlists/{id}/tracks | FILTER: track name and artist match via JMESPath, not query params | VALIDATE: \u2713 track id in body, \u2713 playlist id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 4,
+    "query": "Skip to the next track and set the volume to 60",
+    "oracle": [
+      "POST /me/player/next",
+      "PUT /me/player/volume"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 915.683,
+    "total_latency_s": 1473.586,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "post /me/player/next",
+      "put /me/player/volume"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: skip to next track and set volume to 60 \u2192 MAP: spotify / POST /me/player/next + PUT /me/player/volume| CHAIN: none | COMBINE: single: POST and PUT are independent actions | FILTER: none | VALIDATE: \u2713 both endpoints available, \u2713 volume_percent=60 in PUT, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_volume",
+          "url": "http://mock-server:8080/rest/me/player/volume"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 5,
+    "query": "Put the song now being played into My Music",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "PUT /me/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1093.623,
+    "total_latency_s": 2096.961,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/player/currently-playing",
+      "put /me/tracks"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 add to user's saved tracks | MAP: spotify / GET /me/player/currently-playing + PUT /me/tracks| CHAIN: extract track ID from currently playing track via JMESPath | COMBINE: use track ID in POST to save to library | FILTER: only save if track is playing (is_playing == true), validated via response | VALIDATE: \u2713 track ID in POST body, \u2713 no bare placeholders, \u2713 correct service and endpoint",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 6,
+    "query": "Append the first song of the newest album of my following first artist to my player queue",
+    "oracle": [
+      "GET /me/following",
+      "GET /artists/{id}/albums",
+      "GET /albums/{id}/tracks",
+      "POST /me/player/queue"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1896.106,
+    "total_latency_s": 3204.34,
+    "planned_count": 4,
+    "oracle_count": 4,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/following",
+      "get /artists/{param}/albums",
+      "get /albums/{param}/tracks",
+      "post /me/player/queue"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find first artist from following \u2192 get newest album of that artist \u2192 get first track from that album \u2192 add to queue | MAP: spotify / GET /me/following + GET /artists/{id}/albums + GET /albums/{id}/tracks + POST /me/player/queue| CHAIN: JMESPath to extract first artist, then newest album, then first track | FILTER: filter albums by release date (descending), filter tracks by index 0 | VALIDATE: \u2713 all required params, \u2713 no bare placeholders, \u2713 no AND-combined GET params",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "albums_tracks",
+          "url": "http://mock-server:8080/rest/albums/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 7,
+    "query": "Follow the artist of the song now playing",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "GET /tracks/{id}",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1009.116,
+    "total_latency_s": 1934.261,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_tracks",
+      "playlists_tracks",
+      "artists_related-artists",
+      "me_player",
+      "me_tracks"
+    ],
+    "oracle_missed": [
+      "get /me/player/currently-playing",
+      "get /tracks/{param}",
+      "put /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract artist ID \u2192 follow artist | MAP: spotify / GET /me/tracks + POST /playlists/{id}/tracks + GET /artists/{id}/related-artists + GET /me/player + PUT /me/tracks| CHAIN: GET path \u2190 get_currently_playing[?is_playing==true] | [0].item.artists[0].id | COMBINE: chain: follow_artist consumes get_currently_playing via JMESPath | FILTER: is_playing=true to ensure valid track, artist ID extracted from first artist in array | VALIDATE: \u2713 artist ID in path, \u2713 no bare placeholders, \u2713 type='artist' in follow request",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_related-artists",
+          "url": "http://mock-server:8080/rest/artists/1/related-artists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player",
+          "url": "http://mock-server:8080/rest/me/player"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 8,
+    "query": "Play a song from Taylor Swift's newest album",
+    "oracle": [
+      "GET /search",
+      "GET /artists/{id}/albums",
+      "PUT /me/player/play"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1381.228,
+    "total_latency_s": 2628.14,
+    "planned_count": 7,
+    "oracle_count": 3,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_tracks",
+      "me_albums",
+      "me_player_play",
+      "me_player_queue",
+      "playlists_tracks",
+      "me_player_pause",
+      "albums"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /artists/{param}/albums",
+      "put /me/player/play"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Taylor Swift's newest album \u2192 find tracks on that album \u2192 play the first track | MAP: spotify / DELETE /me/tracks + GET /me/albums + PUT /me/player/play + GET /me/player/queue + GET /playlists/{id}/tracks + PUT /me/player/pause + GET /albums/{id}| CHAIN: search for Taylor Swift's album via q='Taylor Swift' and type='album' | [0].id | then search for tracks on that album via q='album:{{search_album[0].id}}' and type='track' | [0].id | COMBINE: play track via POST /me/player/play with track id from search | FILTER: type='album' and 'Taylor Swift' in q, then type='track' with album id from prior result | VALIDATE: \u2713 all placeholders chained, \u2713 no bare {{}}, \u2713 required params in GET, \u2713 operation POST for play",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "albums",
+          "url": "http://mock-server:8080/rest/albums/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 9,
+    "query": "play me some quiet songs",
+    "oracle": [
+      "GET /search",
+      "PUT /me/player/play"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 960.057,
+    "total_latency_s": 1629.731,
+    "planned_count": 5,
+    "oracle_count": 2,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_devices",
+      "me_player",
+      "artists_albums",
+      "playlists_tracks",
+      "me_player_queue"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "put /me/player/play"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find quiet songs \u2192 play them | MAP: spotify / GET /me/player/devices + GET /me/player + GET /artists/{id}/albums + GET /playlists/{id}/tracks + GET /me/player/queue| CHAIN: none | COMBINE: single | FILTER: quiet songs not defined in query; use default 'quiet' via catalog enum for type | VALIDATE: \u2713 type 'quiet' in enum, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player",
+          "url": "http://mock-server:8080/rest/me/player"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 10,
+    "query": "Follow the artist of the first song recently played",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "GET /tracks/{id}",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1066.657,
+    "total_latency_s": 2061.03,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists_albums",
+      "me_tracks",
+      "me_player_play",
+      "playlists"
+    ],
+    "oracle_missed": [
+      "get /me/player/currently-playing",
+      "get /tracks/{param}",
+      "put /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract artist \u2192 follow that artist | MAP: spotify / GET /artists/{id}/albums + GET /me/tracks + PUT /me/player/play + GET /playlists/{id}| CHAIN: GET /me/player/currently-playing returns item.artists[0].name | COMBINE: follow_artist consumes artist name via JMESPath | FILTER: is_playing must be true, but query param not used per HC-12 | VALIDATE: \u2713 correct service_id, \u2713 no bare placeholders, \u2713 type='artist' in params",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 11,
+    "query": "Switch to the next song and set the single track repeat mode",
+    "oracle": [
+      "POST /me/player/next",
+      "PUT /me/player/repeat"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 930.494,
+    "total_latency_s": 1428.276,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "post /me/player/next",
+      "put /me/player/repeat"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: switch to next song and set repeat mode | MAP: spotify / POST /me/player/next + PUT /me/player/repeat| CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 POST next track uses no input, \u2713 PUT repeat uses state='track' as required by enum, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 12,
+    "query": "Save Jay Chou's album Mojito",
+    "oracle": [
+      "GET /search",
+      "PUT /me/albums"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 975.829,
+    "total_latency_s": 1800.868,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search",
+      "put /me/albums"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Jay Chou's album Mojito \u2192 save to user library | MAP: spotify / GET /search + PUT /me/albums| CHAIN: GET /search returns album id via JMESPath | COMBINE: save album via PUT /me/albums with id from search result | FILTER: q='Jay Chou Mojito', type='album' | VALIDATE: \u2713 correct service, \u2713 type='album' in search, \u2713 id injected via JMESPath",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 13,
+    "query": "Rename my first playlist to \"My First\"",
+    "oracle": [
+      "GET /me/playlists",
+      "PUT /playlists/{playlist_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 917.988,
+    "total_latency_s": 1484.564,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/playlists",
+      "put /playlists/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find user's first playlist by index | MAP: spotify / GET /me/playlists + PUT /playlists/{id}| CHAIN: get_user_playlists returns array, extract [0].id | COMBINE: rename_playlist consumes playlist.id via JMESPath | FILTER: first playlist via index [0], not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 14,
+    "query": "Remove following from the artist of the currently playing music",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "GET /tracks/{id}",
+      "DELETE /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1048.2,
+    "total_latency_s": 2047.699,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_tracks",
+      "me_player_pause",
+      "me_top",
+      "playlists_tracks"
+    ],
+    "oracle_missed": [
+      "get /me/player/currently-playing",
+      "get /tracks/{param}",
+      "delete /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract artist ID \u2192 remove follow from artist | MAP: spotify / PUT /me/tracks + PUT /me/player/pause + GET /me/top/{id} + POST /playlists/{id}/tracks| CHAIN: GET /me/player/currently-playing returns track, extract artist.id via JMESPath | COMBINE: DELETE /me/following consumes artist ID from track | FILTER: artist ID from currently playing track, not user input | VALIDATE: \u2713 correct service_id, \u2713 correct endpoint, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 15,
+    "query": "Pause playback, turn down the volume and resume playing",
+    "oracle": [
+      "PUT /me/player/pause",
+      "PUT /me/player/volume",
+      "PUT /me/player/play"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1010.819,
+    "total_latency_s": 1809.292,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "put /me/player/pause",
+      "put /me/player/volume",
+      "put /me/player/play"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: pause playback, adjust volume, resume playback \u2192 MAP: spotify / PUT /me/player/pause + PUT /me/player/volume + PUT /me/player/play| CHAIN: none | COMBINE: single: pause and volume change via separate PUTs, resume via PUT /me/player/play | FILTER: no filtering needed, direct operation calls | VALIDATE: \u2713 all operations valid, \u2713 volume_percent required but provided in input, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_volume",
+          "url": "http://mock-server:8080/rest/me/player/volume"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 16,
+    "query": "Add songs from the current playing queue to a new playlist called \"Current\"",
+    "oracle": [
+      "GET /me/player/queue",
+      "GET /me",
+      "POST /users/{user_id}/playlists",
+      "PUT /playlists/{playlist_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1275.645,
+    "total_latency_s": 2630.127,
+    "planned_count": 7,
+    "oracle_count": 4,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists",
+      "playlists",
+      "me_player_devices",
+      "me_top",
+      "artists_top-tracks",
+      "me_tracks",
+      "me_tracks"
+    ],
+    "oracle_missed": [
+      "get /me/player/queue",
+      "get /me",
+      "post /users/{param}/playlists",
+      "put /playlists/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve current playback queue \u2192 extract track URIs \u2192 create playlist named 'Current' \u2192 add tracks to playlist | MAP: spotify / GET /artists/{id} + GET /playlists/{id} + GET /me/player/devices + GET /me/top/{id} + GET /artists/{id}/top-tracks + DELETE /me/tracks + PUT /me/tracks| CHAIN: GET queue \u2192 extract items via JMESPath \u2192 use track URIs in POST /me/playlists and POST /me/player/queue | COMBINE: chain: create_playlist and add_to_queue consume queue items via JMESPath | FILTER: track URIs extracted from queue.items, not via search | VALIDATE: \u2713 queue items exist, \u2713 playlist name is literal, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists",
+          "url": "http://mock-server:8080/rest/artists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_top-tracks",
+          "url": "http://mock-server:8080/rest/artists/1/top-tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 17,
+    "query": "What is the name of the song I playing right now?",
+    "oracle": [
+      "GET /me/player/currently-playing"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 926.407,
+    "total_latency_s": 1407.868,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/player/currently-playing"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve currently playing track | MAP: spotify / GET /me/player/currently-playing| CHAIN: none | COMBINE: single | FILTER: is_playing=true via response field | VALIDATE: \u2713 response contains item.name, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 18,
+    "query": "Remove the first album from my music",
+    "oracle": [
+      "GET /me/albums",
+      "DELETE /me/albums"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 971.349,
+    "total_latency_s": 1531.792,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/albums",
+      "delete /me/albums"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve user saved albums \u2192 identify first album ID \u2192 remove album via DELETE | MAP: spotify / GET /me/albums + DELETE /me/albums| CHAIN: GET response items[0].id | COMBINE: delete_album uses first album ID from GET | FILTER: first album via array indexing, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 19,
+    "query": "Show me the albums I saved",
+    "oracle": [
+      "GET /me/albums"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 818.187,
+    "total_latency_s": 1316.466,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/albums"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve user's saved albums \u2192 MAP: spotify / GET /me/albums| CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 GET with no params, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 20,
+    "query": "Follow the artist of the song which is playing right now.",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "GET /tracks/{id}",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 995.442,
+    "total_latency_s": 1909.607,
+    "planned_count": 6,
+    "oracle_count": 3,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_play",
+      "playlists",
+      "me_albums",
+      "artists_albums",
+      "me_player_queue",
+      "me_player_currently-playing"
+    ],
+    "oracle_missed": [
+      "get /me/player/currently-playing",
+      "get /tracks/{param}",
+      "put /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract artist ID \u2192 follow artist | MAP: spotify / PUT /me/player/play + GET /playlists/{id} + DELETE /me/albums + GET /artists/{id}/albums + POST /me/player/queue + GET /me/player/currently-playing| CHAIN: extract artist ID from currently playing track, then use it to follow artist | FILTER: is_playing true, artist from track item, type='artist' for follow | VALIDATE: \u2713 correct endpoint, \u2713 no bare placeholders, \u2713 type='artist' in follow request",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 21,
+    "query": "Recommend me some tracks with the same genre of the music currently playing",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "GET /search"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1106.278,
+    "total_latency_s": 2528.817,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/player/currently-playing",
+      "get /search"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract genre from track \u2192 search for tracks with same genre | MAP: spotify / GET /me/player/currently-playing + GET /search| CHAIN: GET /me/player/currently-playing yields track; use item.id to query /search with type=track and q=genre:genre_value | FILTER: genre inferred from track item, not user input; q param uses genre: value from track | VALIDATE: \u2713 correct service_id, \u2713 no bare placeholders, \u2713 param type=str, \u2713 no AND-combined GET params",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 22,
+    "query": "Append the first track in The Beatle's newest album to my 'My Rock' playlist",
+    "oracle": [
+      "GET /search",
+      "GET /artists/{id}/albums",
+      "POST /playlists/{playlist_id}/tracks",
+      "PUT /playlists/{playlist_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1246.102,
+    "total_latency_s": 2621.525,
+    "planned_count": 5,
+    "oracle_count": 4,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists_albums",
+      "me_player",
+      "me_player_queue",
+      "me_player_next",
+      "playlists"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /artists/{param}/albums",
+      "post /playlists/{param}/tracks",
+      "put /playlists/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find The Beatles' newest album \u2192 get its first track \u2192 add to 'My Rock' playlist | MAP: spotify / GET /artists/{id}/albums + GET /me/player + POST /me/player/queue + PUT /me/player/next + GET /playlists/{id}| CHAIN: search for 'The Beatles' album, sort by release date desc, take first; fetch playlist ID by name 'My Rock'; append track to queue via PUT /me/player/queue | FILTER: album search by artist name, playlist by name, track selection via index | VALIDATE: \u2713 all params from catalog, \u2713 no bare placeholders, \u2713 no duplicate calls",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player",
+          "url": "http://mock-server:8080/rest/me/player"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 23,
+    "query": "Make top tracks of Taylor Swift a new playlist named \"Love Taylor\"",
+    "oracle": [
+      "GET /artists/{id}/top-tracks",
+      "GET /me",
+      "POST /users/{user_id}/playlists",
+      "POST /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2748.403,
+    "total_latency_s": 4018.628,
+    "planned_count": 5,
+    "oracle_count": 4,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_devices",
+      "artists",
+      "me_following",
+      "me_player_queue",
+      "me_following"
+    ],
+    "oracle_missed": [
+      "get /artists/{param}/top-tracks",
+      "get /me",
+      "post /users/{param}/playlists",
+      "post /playlists/{param}/tracks"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Taylor Swift's ID \u2192 get top tracks \u2192 create playlist named 'Love Taylor' with those tracks | MAP: spotify / GET /me/player/devices + GET /artists/{id} + DELETE /me/following + POST /me/player/queue + PUT /me/following| CHAIN: use search result to extract Taylor Swift's ID via JMESPath, then use it to fetch top tracks; finally, use track IDs from top tracks to create playlist via POST | COMBINE: chain: create_playlist uses top_tracks and playlist_name; playlist_name is hardcoded, track IDs are extracted from top_tracks.items[*].id | FILTER: q='Taylor Swift', type='artist' to find artist; only top 5 tracks needed for playlist creation | VALIDATE: \u2713 correct service IDs, \u2713 no bare placeholders, \u2713 all required params in URLs, \u2713 no duplicate calls, \u2713 SQL not needed, \u2713 JMESPath for extraction and composition",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists",
+          "url": "http://mock-server:8080/rest/artists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 24,
+    "query": "Who is my favorite artist?",
+    "oracle": [
+      "GET /me/top/{type}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 936.845,
+    "total_latency_s": 1536.747,
+    "planned_count": 2,
+    "oracle_count": 1,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_next",
+      "me_tracks"
+    ],
+    "oracle_missed": [
+      "get /me/top/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: identify favorite artist from user's followed artists \u2192 MAP: spotify / PUT /me/player/next + PUT /me/tracks| [0].name if only one, else fetch more \u2192 COMBINE: single result from followed artists, ordered by relevance (first in list) \u2192 FILTER: type=artist required, no user query param \u2192 VALIDATE: \u2713 service_id, \u2713 required param, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 25,
+    "query": "Give me a song of my favorite artist",
+    "oracle": [
+      "GET /me/top/{type}",
+      "GET /artists/{id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1065.42,
+    "total_latency_s": 2021.504,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_following",
+      "artists_related-artists",
+      "me_playlists"
+    ],
+    "oracle_missed": [
+      "get /me/top/{param}",
+      "get /artists/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find favorite artist from followed artists \u2192 search for tracks by that artist | MAP: spotify / GET /me/following + GET /artists/{id}/related-artists + GET /me/playlists| CHAIN: extract favorite artist from followed artists list via JMESPath | COMBINE: use artist name in search query | FILTER: type=artist in /me/following, type=track in /search, q matches artist name | VALIDATE: \u2713 type=artist in /me/following, \u2713 type=track in /search, \u2713 q from artist name, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_related-artists",
+          "url": "http://mock-server:8080/rest/artists/1/related-artists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 26,
+    "query": "Delete all music from my 'My R&B' playlist and rename it as 'Test'",
+    "oracle": [
+      "GET /me/playlists",
+      "DELETE /playlists/{playlist_id}/tracks",
+      "PUT /playlists/{playlist_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1225.332,
+    "total_latency_s": 2518.529,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists_top-tracks",
+      "me_albums",
+      "me_tracks",
+      "artists_related-artists",
+      "playlists_tracks"
+    ],
+    "oracle_missed": [
+      "get /me/playlists",
+      "delete /playlists/{param}/tracks",
+      "put /playlists/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find playlist 'My R&B' by name \u2192 delete all tracks from it \u2192 rename playlist to 'Test' | MAP: spotify / GET /artists/{id}/top-tracks + DELETE /me/albums + DELETE /me/tracks + GET /artists/{id}/related-artists + DELETE /playlists/{id}/tracks| CHAIN: playlist_id \u2190 get_user_playlists[?name=='My R&B'] | [0].id; track_ids \u2190 get_playlist_tracks[?name=='My R&B'] | [0].tracks[*].id; rename_playlist consumes track_ids and playlist_id via JMESPath | FILTER: name match via JMESPath, not query param; delete tracks by id array | VALIDATE: \u2713 playlist id in path, \u2713 track ids in DELETE body, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_top-tracks",
+          "url": "http://mock-server:8080/rest/artists/1/top-tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_related-artists",
+          "url": "http://mock-server:8080/rest/artists/1/related-artists"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 27,
+    "query": "show me the album information of the song currently playing",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "GET /tracks/{id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 979.478,
+    "total_latency_s": 1741.125,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/player/currently-playing",
+      "get /tracks/{param}"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract album ID \u2192 fetch album info | MAP: spotify / GET /me/player/currently-playing + GET /tracks/{id}| CHAIN: album ID from currently_playing[0].item.album.id | COMBINE: fetch album via GET /me/albums with album ID | FILTER: only album info needed, no extra filtering | VALIDATE: \u2713 correct endpoints, \u2713 album ID injected via JMESPath, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "tracks",
+          "url": "http://mock-server:8080/rest/tracks/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 28,
+    "query": "Pause device 'My PC' if it is now playing something",
+    "oracle": [
+      "GET /me/player",
+      "PUT /me/player/pause"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1011.427,
+    "total_latency_s": 2008.159,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_repeat",
+      "playlists_tracks",
+      "me_player_next"
+    ],
+    "oracle_missed": [
+      "get /me/player",
+      "put /me/player/pause"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: check if 'My PC' device is playing \u2192 pause if active | MAP: spotify / PUT /me/player/repeat + DELETE /playlists/{id}/tracks + PUT /me/player/next| CHAIN: GET /me/player/devices extracts device.id for 'My PC' via JMESPath | COMBINE: pause playback on device if is_playing is true | FILTER: device.name=='My PC' and is_playing==true | VALIDATE: \u2713 device_id in PUT path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 29,
+    "query": "pause current song and resume it on 'My PC'",
+    "oracle": [
+      "PUT /me/player/pause",
+      "GET /me/player/devices",
+      "PUT /me/player/play"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1101.944,
+    "total_latency_s": 2285.981,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "put /me/player/pause",
+      "get /me/player/devices",
+      "put /me/player/play"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: pause playback on 'My PC' device \u2192 resume playback on 'My PC' device | MAP: spotify / PUT /me/player/pause + GET /me/player/devices + PUT /me/player/play| CHAIN: GET /me/player returns device.name, filter by 'My PC' via JMESPath | COMBINE: pause_player uses device.id from GET /me/player where device.name=='My PC'; resume_player uses POST /me/player/next on same device | FILTER: device.name='My PC' via JMESPath, not query param | VALIDATE: \u2713 device.id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 30,
+    "query": "show me the name of Maroon 5's newest album",
+    "oracle": [
+      "GET /search",
+      "GET /artists/{id}/albums"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1013.058,
+    "total_latency_s": 1895.129,
+    "planned_count": 3,
+    "oracle_count": 2,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_pause",
+      "artists_albums",
+      "me_playlists"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /artists/{param}/albums"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: spotify / PUT /me/player/pause + GET /artists/{id}/albums + GET /me/playlists | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 31,
+    "query": "Recommend more artists base on my first following artist",
+    "oracle": [
+      "GET /me/following",
+      "GET /artists/{id}/related-artists"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 995.31,
+    "total_latency_s": 1958.613,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "playlists",
+      "me_following",
+      "me_player_queue",
+      "me_player_currently-playing"
+    ],
+    "oracle_missed": [
+      "get /me/following",
+      "get /artists/{param}/related-artists"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find first followed artist \u2192 recommend similar artists | MAP: spotify / PUT /playlists/{id} + PUT /me/following + GET /me/player/queue + GET /me/player/currently-playing| CHAIN: JMESPath to extract first artist from response | FILTER: type='artist' for following, q matches artist name | VALIDATE: \u2713 required params, \u2713 no bare placeholders, \u2713 unique service calls",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 32,
+    "query": "Unfollow the artist of the song now playing and skip to the next song",
+    "oracle": [
+      "GET /me/player/currently-playing",
+      "DELETE /me/following",
+      "POST /me/player/next"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1354.292,
+    "total_latency_s": 2815.602,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/player/currently-playing",
+      "delete /me/following",
+      "post /me/player/next"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get currently playing track \u2192 extract artist ID \u2192 unfollow artist via DELETE /me/following \u2192 skip to next track via POST /me/player/next | MAP: spotify / GET /me/player/currently-playing + DELETE /me/following + POST /me/player/next| CHAIN: artist ID from currently playing track via JMESPath | COMBINE: chain: unfollow_artist uses get_current_track to extract artist ID; skip_to_next uses no prior task | FILTER: artist ID must be extracted from item.artists[0].id, not query param | VALIDATE: \u2713 correct service IDs, \u2713 no bare placeholders, \u2713 all required params provided",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 33,
+    "query": "Follow Taylor Swift",
+    "oracle": [
+      "GET /search",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 990.642,
+    "total_latency_s": 1797.886,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search",
+      "put /me/following"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find Taylor Swift in search \u2192 follow artist | MAP: spotify / GET /search + PUT /me/following| CHAIN: search for Taylor Swift via q='Taylor+Swift' and type='artist' | COMBINE: follow artist using found artist id from search results | FILTER: type='artist' and q='Taylor+Swift' via GET params, not JMESPath | VALIDATE: \u2713 type and q in params, \u2713 id from search used in follow request",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 34,
+    "query": "Make my top tracks a new playlist called 'My Top'",
+    "oracle": [
+      "GET /me/top/{type}",
+      "GET /me",
+      "POST /users/{user_id}/playlists",
+      "POST /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 988.51,
+    "total_latency_s": 1837.8,
+    "planned_count": 6,
+    "oracle_count": 4,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_albums",
+      "me_following",
+      "me_top",
+      "me_player_repeat",
+      "me_player_devices",
+      "me_player_play"
+    ],
+    "oracle_missed": [
+      "get /me/top/{param}",
+      "get /me",
+      "post /users/{param}/playlists",
+      "post /playlists/{param}/tracks"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: get user's top tracks \u2192 create playlist named 'My Top' | MAP: spotify / GET /me/albums + GET /me/following + GET /me/top/{id} + PUT /me/player/repeat + GET /me/player/devices + PUT /me/player/play| CHAIN: GET /me/tracks returns tracks; extract track IDs via JMESPath | COMBINE: POST /me/playlists with name 'My Top' and track IDs from GET /me/tracks | FILTER: track IDs from user's saved tracks, not search; playlist name hardcoded | VALIDATE: \u2713 playlist creation via POST, \u2713 track IDs injected via JMESPath, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 35,
+    "query": "Remove the first song from my playlist 'My Rock'",
+    "oracle": [
+      "GET /me/playlists",
+      "GET /playlists/{playlist_id}/tracks",
+      "DELETE /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1099.552,
+    "total_latency_s": 2139.452,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/playlists",
+      "get /playlists/{param}/tracks",
+      "delete /playlists/{param}/tracks"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find playlist 'My Rock' \u2192 get its tracks \u2192 remove first track | MAP: spotify / GET /me/playlists + GET /playlists/{id}/tracks + DELETE /playlists/{id}/tracks| CHAIN: use JMESPath to extract playlist ID from search results where name matches 'My Rock' and type is 'playlist' | COMBINE: delete track via /me/tracks with track ID from playlist | FILTER: playlist name match via JMESPath, not query param; track removal uses track ID from playlist | VALIDATE: \u2713 correct service_id, \u2713 track ID injected, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 36,
+    "query": "add top songs of the first of my following artist to My Music",
+    "oracle": [
+      "GET /me/following",
+      "GET /artists/{id}/top-tracks",
+      "PUT /me/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1994.299,
+    "total_latency_s": 3557.901,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_play",
+      "me_tracks",
+      "playlists_tracks",
+      "artists_related-artists",
+      "me_albums"
+    ],
+    "oracle_missed": [
+      "get /me/following",
+      "get /artists/{param}/top-tracks",
+      "put /me/tracks"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find first followed artist \u2192 get their top tracks \u2192 add to library | MAP: spotify / PUT /me/player/play + PUT /me/tracks + PUT /playlists/{id}/tracks + GET /artists/{id}/related-artists + DELETE /me/albums| CHAIN: get_followed_artists[0].id \u2192 search_tracks_for_artist(q=artist.id, type=track) \u2192 add_tracks_to_library(track_ids) | FILTER: first artist via JMESPath, track search by artist ID, add tracks via POST /me/tracks with IDs | VALIDATE: \u2713 correct service IDs, \u2713 required params in GETs, \u2713 no bare placeholders, \u2713 POST uses track IDs from search, \u2713 no duplicate calls",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_related-artists",
+          "url": "http://mock-server:8080/rest/artists/1/related-artists"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 37,
+    "query": "Follow all the artists involved in the playlist 'My R&B'",
+    "oracle": [
+      "GET /me",
+      "GET /playlists/{playlist_id}",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 2267.457,
+    "total_latency_s": 3639.946,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "search",
+      "me_albums",
+      "me_tracks",
+      "playlists"
+    ],
+    "oracle_missed": [
+      "get /me",
+      "get /playlists/{param}",
+      "put /me/following"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: spotify / GET /search + GET /me/albums + DELETE /me/tracks + GET /playlists/{id} | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 38,
+    "query": "remove the second track from my playlist 'My R&B'",
+    "oracle": [
+      "GET /me/playlists",
+      "GET /playlists/{playlist_id}/tracks",
+      "DELETE /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1037.457,
+    "total_latency_s": 2003.062,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/playlists",
+      "get /playlists/{param}/tracks",
+      "delete /playlists/{param}/tracks"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find playlist 'My R&B' \u2192 get its tracks \u2192 remove second track | MAP: spotify / GET /me/playlists + GET /playlists/{id}/tracks + DELETE /playlists/{id}/tracks| CHAIN: use search to find playlist by name, then fetch user tracks with JMESPath to extract track IDs | COMBINE: remove second track via DELETE /me/tracks using track ID from results | FILTER: playlist name 'My R&B' via JMESPath, track index 1 (second) via array slice | VALIDATE: \u2713 correct service, \u2713 no bare placeholders, \u2713 uses JMESPath for index and filtering",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 39,
+    "query": "remove the third track from My Music",
+    "oracle": [
+      "GET /me/tracks",
+      "DELETE /me/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 938.835,
+    "total_latency_s": 1475.748,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/tracks",
+      "delete /me/tracks"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find user saved tracks \u2192 extract third track id \u2192 remove track | MAP: spotify / GET /me/tracks + DELETE /me/tracks| CHAIN: GET returns list, extract third item via JMESPath | COMBINE: delete track using id from JMESPath | FILTER: index 2 for third track, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 40,
+    "query": "Follow all the singers involved in the song When You Believe",
+    "oracle": [
+      "GET /search",
+      "GET /track/{id}",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1102.174,
+    "total_latency_s": 2399.557,
+    "planned_count": 7,
+    "oracle_count": 3,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "users_playlists",
+      "me_albums",
+      "playlists_tracks",
+      "me_player_repeat",
+      "me_top",
+      "me_tracks",
+      "search"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /track/{param}",
+      "put /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find song 'When You Believe' \u2192 get artists involved \u2192 follow each artist | MAP: spotify / POST /users/{id}/playlists + GET /me/albums + GET /playlists/{id}/tracks + PUT /me/player/repeat + GET /me/top/{id} + PUT /me/tracks + GET /search| CHAIN: search results \u2192 extract artists via JMESPath \u2192 follow each artist via PUT /me/following | COMBINE: chain: follow_artists consumes search_results via JMESPath | FILTER: track name match via q param, artist type via type param | VALIDATE: \u2713 q='When You Believe', type='track', type='artist', \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "users_playlists",
+          "url": "http://mock-server:8080/rest/users/1/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 41,
+    "query": "Skip to the next track",
+    "oracle": [
+      "POST /me/player/next"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 884.872,
+    "total_latency_s": 1345.182,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "post /me/player/next"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: skip current track \u2192 set next | MAP: spotify / POST /me/player/next| CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 POST operation, \u2713 correct endpoint, \u2713 no placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 42,
+    "query": "Play my playlist 'My Rock'",
+    "oracle": [
+      "GET /me/playlists",
+      "PUT /me/player/play"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 974.446,
+    "total_latency_s": 1624.227,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /me/playlists",
+      "put /me/player/play"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find playlist 'My Rock' by name \u2192 play it | MAP: spotify / GET /me/playlists + PUT /me/player/play| CHAIN: get_user_playlists \u2190 GET /me/playlists | [?name=='My Rock'] | [0].id | COMBINE: play_playlist via PUT /me/player/queue with id from JMESPath | FILTER: name match via JMESPath, not query param | VALIDATE: \u2713 id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_play",
+          "url": "http://mock-server:8080/rest/me/player/play"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 43,
+    "query": "Clear my music library and cancel all following singers",
+    "oracle": [
+      "GET /me/tracks",
+      "DELETE /me/tracks",
+      "GET /me/following",
+      "DELETE /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1102.42,
+    "total_latency_s": 2502.841,
+    "planned_count": 7,
+    "oracle_count": 4,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists_related-artists",
+      "playlists",
+      "tracks",
+      "me_following",
+      "me_tracks",
+      "me_player_next",
+      "albums"
+    ],
+    "oracle_missed": [
+      "get /me/tracks",
+      "delete /me/tracks",
+      "get /me/following",
+      "delete /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: clear library (delete saved albums) + cancel following (unfollow artists) | MAP: spotify / GET /artists/{id}/related-artists + PUT /playlists/{id} + GET /tracks/{id} + DELETE /me/following + GET /me/tracks + POST /me/player/next + GET /albums/{id}| CHAIN: GET /me/following returns artist IDs to unfollow; delete saved albums via DELETE /me/albums | COMBINE: chain: delete saved albums and unfollow artists via separate service calls | FILTER: use type='artist' to filter following list; delete all albums via empty input | VALIDATE: \u2713 DELETE calls with correct endpoints, \u2713 no bare placeholders, \u2713 all required params passed",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_related-artists",
+          "url": "http://mock-server:8080/rest/artists/1/related-artists"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists",
+          "url": "http://mock-server:8080/rest/playlists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "tracks",
+          "url": "http://mock-server:8080/rest/tracks/1"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "albums",
+          "url": "http://mock-server:8080/rest/albums/1"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 44,
+    "query": "Create a new playlist and name it Quiet",
+    "oracle": [
+      "GET /me",
+      "POST /users/{user_id}/playlists"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 950.722,
+    "total_latency_s": 1506.332,
+    "planned_count": 4,
+    "oracle_count": 2,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_following",
+      "me_player_pause",
+      "me_top",
+      "me_tracks"
+    ],
+    "oracle_missed": [
+      "get /me",
+      "post /users/{param}/playlists"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: create playlist named 'Quiet' \u2192 MAP: spotify / GET /me/following + PUT /me/player/pause + GET /me/top/{id} + DELETE /me/tracks| CHAIN: none | COMBINE: single: create_playlist uses user_id from context (assumed available) | FILTER: playlist name 'Quiet' from query, not param | VALIDATE: \u2713 POST url with user_id, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 45,
+    "query": "Turn down the volume to 20",
+    "oracle": [
+      "PUT /me/player/volume"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 926.552,
+    "total_latency_s": 1393.222,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "put /me/player/volume"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: set volume to 20% \u2192 MAP: spotify / PUT /me/player/volume| CHAIN: none | COMBINE: single | FILTER: volume_percent=20 | VALIDATE: \u2713 volume_percent in input, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_volume",
+          "url": "http://mock-server:8080/rest/me/player/volume"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 46,
+    "query": "Set the single track repeat mode",
+    "oracle": [
+      "PUT /me/player/repeat"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 910.296,
+    "total_latency_s": 1444.964,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "put /me/player/repeat"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: set repeat mode to 'track' \u2192 MAP: spotify / PUT /me/player/repeat| CHAIN: none | COMBINE: single | FILTER: state='track' from enum | VALIDATE: \u2713 service_id, \u2713 required param state, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 47,
+    "query": "Pause playback, increase volume to 80 and switch to the next song",
+    "oracle": [
+      "PUT /me/player/pause",
+      "PUT /me/player/volume",
+      "POST /me/player/next"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 958.651,
+    "total_latency_s": 1640.371,
+    "planned_count": 3,
+    "oracle_count": 3,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "put /me/player/pause",
+      "put /me/player/volume",
+      "post /me/player/next"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: pause playback, set volume to 80, skip to next track \u2192 MAP: spotify / PUT /me/player/pause + PUT /me/player/volume + POST /me/player/next| CHAIN: none | COMBINE: single | FILTER: volume_percent=80 via input, no query param | VALIDATE: \u2713 all endpoints valid, \u2713 volume_percent required, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_volume",
+          "url": "http://mock-server:8080/rest/me/player/volume"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 48,
+    "query": "Play the newest album of BIGBANG",
+    "oracle": [
+      "GET /search",
+      "GET /artists/{id}/albums",
+      "PUT /me/player/play"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 974.552,
+    "total_latency_s": 1627.347,
+    "planned_count": 7,
+    "oracle_count": 3,
+    "delta_sl": 4,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "playlists_tracks",
+      "search",
+      "me_player_queue",
+      "me_following",
+      "me",
+      "me_albums",
+      "me_player_pause"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /artists/{param}/albums",
+      "put /me/player/play"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find BIGBANG's newest album | MAP: spotify / PUT /playlists/{id}/tracks + GET /search + POST /me/player/queue + PUT /me/following + GET /me + GET /me/albums + PUT /me/player/pause| CHAIN: extract newest album via JMESPath sort | COMBINE: single: return album.id for playback | FILTER: type=album, q=BIGBANG via GET param | VALIDATE: \u2713 album.id in response, \u2713 GET param used, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me",
+          "url": "http://mock-server:8080/rest/me"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 49,
+    "query": "Follow the artist of the album Mojito",
+    "oracle": [
+      "GET /search",
+      "GET /albums/{id}",
+      "PUT /me/following"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1041.045,
+    "total_latency_s": 2132.145,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_next",
+      "artists_top-tracks",
+      "me_player_currently-playing",
+      "me_following"
+    ],
+    "oracle_missed": [
+      "get /search",
+      "get /albums/{param}",
+      "put /me/following"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find album Mojito \u2192 get artist from album \u2192 follow artist | MAP: spotify / POST /me/player/next + GET /artists/{id}/top-tracks + GET /me/player/currently-playing + DELETE /me/following| CHAIN: GET /search returns tracks.items, use JMESPath to filter by album.name == 'Mojito' | COMBINE: follow_artist consumes artist.id from search result via JMESPath | FILTER: album.name match via JMESPath, not query param; follow type='artist' | VALIDATE: \u2713 album.name in response, \u2713 type='artist' in follow, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_top-tracks",
+          "url": "http://mock-server:8080/rest/artists/1/top-tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_currently-playing",
+          "url": "http://mock-server:8080/rest/me/player/currently-playing"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 50,
+    "query": "Play the third song from my music library and set the single track repeat mode",
+    "oracle": [
+      "GET /me/tracks",
+      "GET /tracks/{id}",
+      "PUT /me/player/play",
+      "PUT /me/player/repeat"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1239.393,
+    "total_latency_s": 2531.825,
+    "planned_count": 7,
+    "oracle_count": 4,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_queue",
+      "playlists_tracks",
+      "me_following",
+      "me_player_devices",
+      "me_playlists",
+      "playlists_tracks",
+      "me_albums"
+    ],
+    "oracle_missed": [
+      "get /me/tracks",
+      "get /tracks/{param}",
+      "put /me/player/play",
+      "put /me/player/repeat"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve user's saved tracks \u2192 select third track \u2192 play it \u2192 set repeat mode to 'track' | MAP: spotify / GET /me/player/queue + DELETE /playlists/{id}/tracks + PUT /me/following + GET /me/player/devices + GET /me/playlists + PUT /playlists/{id}/tracks + PUT /me/albums| CHAIN: extract track id from items[2] via JMESPath | COMBINE: play track via PUT /me/player/play with track ID, repeat via PUT /me/player/repeat | FILTER: index 2 for third track, state='track' for repeat | VALIDATE: \u2713 correct service IDs, \u2713 no bare placeholders, \u2713 repeat state valid",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_queue",
+          "url": "http://mock-server:8080/rest/me/player/queue"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_playlists",
+          "url": "http://mock-server:8080/rest/me/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 51,
+    "query": "Create a new playlist named 'BIGBANG' and add a song of BIGBANG to it",
+    "oracle": [
+      "GET /me",
+      "POST /users/{user_id}/playlists",
+      "GET /search",
+      "POST /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1057.967,
+    "total_latency_s": 2086.575,
+    "planned_count": 5,
+    "oracle_count": 4,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_albums",
+      "me_top",
+      "artists_related-artists",
+      "playlists_tracks",
+      "me_player_repeat"
+    ],
+    "oracle_missed": [
+      "get /me",
+      "post /users/{param}/playlists",
+      "get /search",
+      "post /playlists/{param}/tracks"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: create playlist named 'BIGBANG' and add a BIGBANG track | MAP: spotify / DELETE /me/albums + GET /me/top/{id} + GET /artists/{id}/related-artists + PUT /playlists/{id}/tracks + PUT /me/player/repeat| CHAIN: search for BIGBANG track via GET /search, extract item.id | COMBINE: playlist creation with track addition via POST /users/{user_id}/playlists using search result | FILTER: track name contains 'BIGBANG' via search param q='BIGBANG', type='track' | VALIDATE: \u2713 playlist name 'BIGBANG', \u2713 track added via item.id, \u2713 user_id from context",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_top",
+          "url": "http://mock-server:8080/rest/me/top/1"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_related-artists",
+          "url": "http://mock-server:8080/rest/artists/1/related-artists"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_repeat",
+          "url": "http://mock-server:8080/rest/me/player/repeat"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 52,
+    "query": "Delete all songs from my first playlist",
+    "oracle": [
+      "GET /me/playlists",
+      "GET /playlists/{playlist_id}",
+      "DELETE /playlists/{playlist_id}/tracks"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 991.633,
+    "total_latency_s": 1837.11,
+    "planned_count": 4,
+    "oracle_count": 3,
+    "delta_sl": 1,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists",
+      "me_tracks",
+      "albums",
+      "me_player_next"
+    ],
+    "oracle_missed": [
+      "get /me/playlists",
+      "get /playlists/{param}",
+      "delete /playlists/{param}/tracks"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find user's first playlist \u2192 delete all tracks from it | MAP: spotify / GET /artists/{id} + DELETE /me/tracks + GET /albums/{id} + POST /me/player/next| CHAIN: GET /search with q='my playlist' and type='playlist' to get playlist ID | [0].id | COMBINE: delete_tracks_from_playlist consumes get_search_playlists via JMESPath | FILTER: first playlist via [0], not query param | VALIDATE: \u2713 playlist_id in path, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists",
+          "url": "http://mock-server:8080/rest/artists/1"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_tracks",
+          "url": "http://mock-server:8080/rest/me/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "albums",
+          "url": "http://mock-server:8080/rest/albums/1"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 53,
+    "query": "Make my first playlist private",
+    "oracle": [
+      "GET /me/playlists",
+      "GET /playlists/{playlist_id}",
+      "PUT /playlists/{playlist_id}"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 954.655,
+    "total_latency_s": 1518.028,
+    "planned_count": 5,
+    "oracle_count": 3,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "me_player_next",
+      "me_player_pause",
+      "me_player_shuffle",
+      "playlists_tracks",
+      "me_albums"
+    ],
+    "oracle_missed": [
+      "get /me/playlists",
+      "get /playlists/{param}",
+      "put /playlists/{param}"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: create playlist named 'My First Playlist' \u2192 set privacy to private | MAP: spotify / PUT /me/player/next + PUT /me/player/pause + PUT /me/player/shuffle + PUT /playlists/{id}/tracks + GET /me/albums| CHAIN: none | COMBINE: single: create_playlist uses POST to create playlist, then update via PUT with privacy flag | FILTER: playlist name 'My First Playlist' via input, privacy via PUT | VALIDATE: \u2713 POST creates playlist, \u2713 PUT updates with privacy, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_next",
+          "url": "http://mock-server:8080/rest/me/player/next"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_pause",
+          "url": "http://mock-server:8080/rest/me/player/pause"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_player_shuffle",
+          "url": "http://mock-server:8080/rest/me/player/shuffle"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 54,
+    "query": "Add album Mojito to my music library",
+    "oracle": [
+      "GET /search",
+      "PUT /me/albums"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 990.365,
+    "total_latency_s": 1739.989,
+    "planned_count": 2,
+    "oracle_count": 2,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": true,
+    "matches": [
+      "get /search",
+      "put /me/albums"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: find album 'Mojito' in search results \u2192 add to library | MAP: spotify / GET /search + PUT /me/albums| CHAIN: search results filtered via JMESPath for album name | COMBINE: use track id from search to POST to /me/albums | FILTER: album name match via JMESPath, not query param | VALIDATE: \u2713 correct service_id, \u2713 no bare placeholders, \u2713 required param 'q' and 'type' in search",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        },
+        {
+          "input": "{}",
+          "operation": "PUT",
+          "service_id": "spotify",
+          "task_name": "me_albums",
+          "url": "http://mock-server:8080/rest/me/albums"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 55,
+    "query": "Add the first song from my music library to the playback queue and enable single song repeat mode",
+    "oracle": [
+      "GET /me/tracks",
+      "POST /me/player/queue",
+      "PUT /me/player/repeat"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 1009.998,
+    "total_latency_s": 1988.513,
+    "planned_count": 6,
+    "oracle_count": 3,
+    "delta_sl": 3,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "artists_top-tracks",
+      "artists_albums",
+      "me_player_devices",
+      "users_playlists",
+      "me",
+      "me_following"
+    ],
+    "oracle_missed": [
+      "get /me/tracks",
+      "post /me/player/queue",
+      "put /me/player/repeat"
+    ],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve first song from library \u2192 add to queue \u2192 enable repeat | MAP: spotify / GET /artists/{id}/top-tracks + GET /artists/{id}/albums + GET /me/player/devices + POST /users/{id}/playlists + GET /me + DELETE /me/following| CHAIN: GET currently_playing returns track list, first item.id used in POST queue | COMBINE: queue song via POST, repeat via PUT | FILTER: first track from response via JMESPath, not query param | VALIDATE: \u2713 uri in POST, \u2713 state in PUT, \u2713 no bare placeholders",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_top-tracks",
+          "url": "http://mock-server:8080/rest/artists/1/top-tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me_player_devices",
+          "url": "http://mock-server:8080/rest/me/player/devices"
+        },
+        {
+          "input": "{}",
+          "operation": "POST",
+          "service_id": "spotify",
+          "task_name": "users_playlists",
+          "url": "http://mock-server:8080/rest/users/1/playlists"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me",
+          "url": "http://mock-server:8080/rest/me"
+        },
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "me_following",
+          "url": "http://mock-server:8080/rest/me/following"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 56,
+    "query": "What is my user name?",
+    "oracle": [
+      "GET /me"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 886.879,
+    "total_latency_s": 1362.65,
+    "planned_count": 1,
+    "oracle_count": 1,
+    "delta_sl": 0,
+    "is_correct_path": true,
+    "tasks_successful": false,
+    "matches": [
+      "get /me"
+    ],
+    "mismatches": [],
+    "oracle_missed": [],
+    "execution_plan": {
+      "reasoning": "DECOMPOSE: retrieve user display name \u2192 MAP: spotify / GET /me| CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 service exists, \u2713 GET /me returns display_name",
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "me",
+          "url": "http://mock-server:8080/rest/me"
+        }
+      ]
+    },
+    "execution_results": []
+  },
+  {
+    "query_index": 57,
+    "query": "Pause the player",
+    "oracle": [
+      "PUT /me/player/pause"
+    ],
+    "error": "",
+    "http_status": 200,
+    "planning_latency_s": 897.866,
+    "total_latency_s": 1421.907,
+    "planned_count": 3,
+    "oracle_count": 1,
+    "delta_sl": 2,
+    "is_correct_path": false,
+    "tasks_successful": false,
+    "matches": [],
+    "mismatches": [
+      "playlists_tracks",
+      "artists_albums",
+      "search"
+    ],
+    "oracle_missed": [
+      "put /me/player/pause"
+    ],
+    "execution_plan": {
+      "tasks": [
+        {
+          "input": "{}",
+          "operation": "DELETE",
+          "service_id": "spotify",
+          "task_name": "playlists_tracks",
+          "url": "http://mock-server:8080/rest/playlists/1/tracks"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "artists_albums",
+          "url": "http://mock-server:8080/rest/artists/1/albums"
+        },
+        {
+          "input": "{}",
+          "operation": "GET",
+          "service_id": "spotify",
+          "task_name": "search",
+          "url": "http://mock-server:8080/rest/search"
+        }
+      ],
+      "reasoning": "DECOMPOSE: process query | MAP: spotify / DELETE /playlists/{id}/tracks + GET /artists/{id}/albums + GET /search | CHAIN: none | COMBINE: single | FILTER: none | VALIDATE: \u2713 valid"
+    },
+    "execution_results": []
+  }
+]

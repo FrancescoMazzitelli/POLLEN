@@ -242,6 +242,7 @@ def main():
 
     # Write outputs
     write_metrics_json(metrics, output_dir / "metrics.json")
+    write_per_query_csv(results, output_dir / "per_query.csv")
 
     print(f"\nOutput directory: {output_dir}")
     print("Done.")

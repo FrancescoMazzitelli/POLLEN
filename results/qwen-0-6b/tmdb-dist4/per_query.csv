@@ -1,0 +1,101 @@
+query_index,query,oracle_count,planned_count,delta_sl,is_correct_path,tasks_successful,precision,recall,f1,jaccard,coverage,planning_latency_s,total_latency_s,http_status
+1,give me the number of movies directed by Sofia Coppola,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,641.828,815.006,200
+2,Who was the lead actor in the movie The Dark Knight?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,482.509,883.926,200
+3,Who directed the top-1 rated movie?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,620.941,1156.02,200
+4,give me a image for the collection Star Wars,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,667.654,802.163,200
+5,What is the logo of the Walt Disney?,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,476.577,617.878,200
+6,What dose the lead actor of Titanic look like?,3,7,4,False,False,0.0,0.0,0.0,0.0,0.0,415.591,903.213,200
+7,give me some reviews of the first movie that is similar to Titanic,3,4,1,False,False,0.0,0.0,0.0,0.0,0.0,407.961,869.303,200
+8,I just finished watching Titanic and I want some other movie recommendations,2,5,3,False,False,0.0,0.0,0.0,0.0,0.0,594.965,1076.965,200
+9,What is the latest movie directed by Christopher Nolan?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,466.132,1103.559,200
+10,tell me the highest rated movie directed by Martin Scorsese,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,642.829,753.899,200
+11,Who is the director of Leonardo DiCaprio's latest movie?,3,5,2,False,False,0.2,0.3333,0.25,0.1429,0.3333,591.746,1018.884,200
+12,tell me a TV show recently directed by Catherine Hardwicke,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,502.075,843.288,200
+13,Please recommend me some TV shows similar to Breaking Bad,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,737.164,1001.957,200
+14,Who is the director of today's most trending movie?,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,427.824,808.03,200
+15,"Who is the director of the movie ""Twilight""?",2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,670.677,899.274,200
+16,give me a photo belong to the second episode of the first season of the Witcher,2,5,3,False,False,0.2,0.5,0.2857,0.1667,0.5,609.607,1752.249,200
+17,What is top-1 rated movie?,1,1,0,True,True,1.0,1.0,1.0,1.0,1.0,555.337,1042.795,200
+18,"What is the release date of the movie ""The Matrix""?",2,5,3,False,False,0.0,0.0,0.0,0.0,0.0,548.454,834.497,200
+19,Who is the most popular person?,1,1,0,True,True,1.0,1.0,1.0,1.0,1.0,558.761,858.229,200
+20,Give me some cover images of movies directed by Christopher Nolan.,3,6,3,False,False,0.1667,0.3333,0.2222,0.125,0.3333,550.788,906.007,200
+21,"What are some common keywords associated with movie ""Titanic""?",2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,679.898,1110.404,200
+22,Give me a show that is currently on the air,1,1,0,True,False,1.0,1.0,1.0,1.0,1.0,630.178,1018.322,200
+23,When is Clint Eastwood's latest movie scheduled to be released?,3,5,2,False,False,0.2,0.3333,0.25,0.1429,0.3333,677.788,956.13,200
+24,Give me some movie reviews about The Dark Knight,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,624.061,1196.743,200
+25,What are some movies that are similar to one of the movies directed by Francis Ford Coppola?,3,5,2,False,False,0.2,0.3333,0.25,0.1429,0.3333,646.034,1439.644,200
+26,Who is the lead actor in the latest released movie?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,688.036,1680.591,200
+27,give me one image of the movie that is currently showing in theaters,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,593.811,1340.515,200
+28,What is the most popular movie right now and what is its keywords?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,561.08,983.713,200
+29,What are the keywords of the most popular movie right now,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,514.222,868.378,200
+30,"Who has starred in a movie ""Titanic""",2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,567.471,956.839,200
+31,What do the logo looks like for Paramount Pictures?,2,5,3,False,False,0.0,0.0,0.0,0.0,0.0,599.875,1195.274,200
+32,"tell me where the company ""universal pictures"" was founded?",2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,579.677,804.32,200
+33,"When is the movie ""Titanic"" released?",2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,1466.786,1755.754,200
+34,Who has starred in the first movie of Star Wars collection?,3,5,2,False,False,0.0,0.0,0.0,0.0,0.0,646.45,1511.761,200
+35,give me a movie cover of a movie from the collection Harry Potter,3,4,1,False,False,0.0,0.0,0.0,0.0,0.0,571.539,788.729,200
+36,What are some keywords for a movie of the collection The Hunger Games?,3,7,4,False,False,0.0,0.0,0.0,0.0,0.0,646.333,922.476,200
+37,When are the release dates for the movies of the collection The Hobbit?,2,5,3,False,False,0.0,0.0,0.0,0.0,0.0,655.967,1135.664,200
+38,List movies from The Fast and the Furious collection,2,6,4,False,False,0.0,0.0,0.0,0.0,0.0,613.657,1151.667,200
+39,Give me a review of a movie from the collection The Fast and the Furious.,3,7,4,False,False,0.0,0.0,0.0,0.0,0.0,600.708,921.081,200
+40,When was the first movie of the collection Lord of the Rings released?,2,4,2,False,False,0.0,0.0,0.0,0.0,0.0,551.16,830.481,200
+41,tell me the directors of the first season of House of Cards,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,619.312,1013.238,200
+42,I want some tv shows that similar to House of Cards,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,792.944,1200.269,200
+43,When did the most popular TV show currently on the air start?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,1300.127,1967.335,200
+44,tell me a few more works directed by the director of Django Unchained,3,5,2,False,False,0.0,0.0,0.0,0.0,0.0,482.313,822.448,200
+45,tell me the cast of a TV show on the air,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,515.078,748.437,200
+46,I need a review for Breaking Bad,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,581.263,902.842,200
+47,I'm watching the tv series The Last Of Us and I need some more recommendations,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,518.234,784.21,200
+48,I'm watching a TV show called The Last Of Us and I need some more recommendations,2,2,0,True,False,1.0,1.0,1.0,1.0,1.0,896.44,1158.872,200
+49,"tell me the guest star from season 3, episode 24 of Friends",2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,1028.525,1268.798,200
+50,Who is the lead actor in the most popular TV show?,2,4,2,False,False,0.0,0.0,0.0,0.0,0.0,601.239,809.148,200
+51,give me a keyword of the top-1 rated TV show,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,512.539,770.457,200
+52,give me a poster of 2 Broke Girls,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,890.472,1603.013,200
+53,How many episodes does 2 Broke Girls have in total?,2,4,2,False,False,0.0,0.0,0.0,0.0,0.0,1701.757,1947.955,200
+54,When was the company that produced The Big Bang Theory founded?,3,7,4,False,False,0.1429,0.3333,0.2,0.1111,0.3333,813.208,1094.322,200
+55,When was the TV show The Big Bang Theory created?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,545.25,761.194,200
+56,give me a keyword of the most popular TV show,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,507.44,707.95,200
+57,What did the third episode of the second season of Westworld talk about?,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,616.19,1849.149,200
+58,Tell me the air date of the second season of Game of Thrones,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,519.762,827.393,200
+59, give me a poster of the third episode of Band of Brothers,2,6,4,False,False,0.1667,0.5,0.25,0.1429,0.5,467.656,705.957,200
+60,What is the logo of the network that produced Game of Thrones?,3,7,4,False,False,0.1429,0.3333,0.2,0.1111,0.3333,989.96,1435.176,200
+61,give me the homepage of the network that produced Game of Thrones,3,7,4,False,False,0.1429,0.3333,0.2,0.1111,0.3333,483.777,746.558,200
+62,give me a keyword of the most popular TV show currently,2,5,3,False,False,0.2,0.5,0.2857,0.1667,0.5,518.564,835.133,200
+63,Where is the headquarter of the company that produced currently the most popular TV show?,3,5,2,False,False,0.2,0.3333,0.25,0.1429,0.3333,1094.956,1971.626,200
+64,What is the genre of The Mandalorian?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,816.758,1180.104,200
+65,When is the birthday of the lead actor of today's most trending TV show?,3,6,3,False,False,0.1667,0.3333,0.2222,0.125,0.3333,1095.758,1721.753,200
+66,What is the homepage of the network that produced today's most trending TV show?,3,6,3,False,False,0.1667,0.3333,0.2222,0.125,0.3333,865.339,1423.967,200
+67,give me a review of today's most trending TV show,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,584.603,1201.79,200
+68,I prefer a TV show that similar to today's most trending TV show,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,536.709,808.09,200
+69,I need a poster of today's most trending TV show,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,558.226,1052.583,200
+70,Who has worked with Jeremy Clarkson in his most popular TV show?,3,7,4,False,False,0.0,0.0,0.0,0.0,0.0,545.195,1075.132,200
+71,What does the lead actor of the first episode of second season of Black Mirror look like?,3,6,3,False,False,0.1667,0.3333,0.2222,0.125,0.3333,1078.466,1561.442,200
+72,When is the lead actor of The Mandalorian born?,3,5,2,False,False,0.0,0.0,0.0,0.0,0.0,540.504,844.272,200
+73,Who is the lead actor of today's most popular TV show?,2,4,2,False,False,0.25,0.5,0.3333,0.2,0.5,876.831,1388.182,200
+74,give me a photo of the lead actor of the most popular TV show of this week,3,7,4,False,False,0.1429,0.3333,0.2,0.1111,0.3333,523.123,776.949,200
+75,give me some reviews of Cate Blanchett's latest TV show,3,7,4,False,False,0.1429,0.3333,0.2,0.1111,0.3333,587.523,907.208,200
+76,What is David Schwimmer's most popular TV show?,2,6,4,False,False,0.1667,0.5,0.25,0.1429,0.5,1118.213,1478.386,200
+77,Who directed the third episode of the second season of Black Mirror?,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,588.996,1039.515,200
+78,give me some movies that Christopher Nolan known for,1,1,0,True,True,1.0,1.0,1.0,1.0,1.0,531.098,840.542,200
+79,"Avatar versus Avatar: The Way of Water, which has a higher rating",2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,534.272,1096.096,200
+80,Show me some English movies rating no less than 7.0 and no earlier than 2021,1,1,0,True,True,1.0,1.0,1.0,1.0,1.0,524.873,804.069,200
+81,What is the genre of the movie Lord of the Ring?,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,677.57,1353.189,200
+82,What is the birthday of the most popular person right now?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,533.692,815.444,200
+83,give me a poster of the second season of Big Bang Theory,2,4,2,False,False,0.0,0.0,0.0,0.0,0.0,546.678,812.613,200
+84,What is the name of the third episod of the second season of Mandalorian?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,1444.631,1736.299,200
+85,When is the bitrhday of the lead actor of the movie The Shawshank Redemptionn?,3,5,2,False,False,0.2,0.3333,0.25,0.1429,0.3333,1170.358,1677.762,200
+86,When is the birthday of the director of the movie The Shawshank Redemption?,3,4,1,False,False,0.0,0.0,0.0,0.0,0.0,515.73,969.676,200
+87,Where is the headquarter of the company that created the movie The Shawshank Redemption?,3,5,2,False,False,0.0,0.0,0.0,0.0,0.0,1178.332,1638.274,200
+88,Where is the headquarter of the company that created the collection Star Wars?,3,7,4,False,False,0.0,0.0,0.0,0.0,0.0,512.211,1003.466,200
+89,"Who has an earlier release date, The Double Life of Veronique or Mulholland Drive?",2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,550.352,825.56,200
+90,Is the director of Twin Peaks Season 1 and Mulholland Drive the same person?,4,7,3,False,False,0.0,0.0,0.0,0.0,0.0,1074.652,1274.246,200
+91,Where was the director of Mulholland Drive born?,3,3,0,True,True,1.0,1.0,1.0,1.0,1.0,586.699,1304.824,200
+92,Is Mulholland Drive in the Top-10 rated list of the TMDB?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,613.474,1292.987,200
+93,"Who directed more movies, Akira Kurosawa or Spielberg?",2,6,4,False,False,0.0,0.0,0.0,0.0,0.0,677.991,926.037,200
+94,What TV series has the director of Mulholland Drive directed?,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,926.423,1185.912,200
+95,Tell me about actor Scarlett Johansson's birthday,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,479.106,825.829,200
+96,How many seasons of Sword Art Online are there?,2,2,0,True,True,1.0,1.0,1.0,1.0,1.0,757.545,982.665,200
+97,Are Yui Aragaki and Gen Hoshino co-starring in We Married as Job?,2,4,2,False,False,0.0,0.0,0.0,0.0,0.0,576.165,898.376,200
+98,"Who is older, by how many years, the director of film Barbie or the lead actor of television DEATH NOTE?",4,6,2,False,False,0.0,0.0,0.0,0.0,0.0,498.186,796.319,200
+99,Tell me about Katherine LaNasa's latest movie appearance.,2,3,1,False,False,0.3333,0.5,0.4,0.25,0.5,538.484,846.69,200
+100,Give me one cover image of the movie Oppenheimer.,2,3,1,False,False,0.0,0.0,0.0,0.0,0.0,486.794,1123.369,200

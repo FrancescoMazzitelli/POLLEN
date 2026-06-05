@@ -1,0 +1,27 @@
+{
+  "total_queries": 100,
+  "successful_queries": 67,
+  "correct_path_queries": 72,
+  "success_rate_s_pct": 67.0,
+  "correct_path_rate_cp_pct": 72.0,
+  "avg_delta_sl": 0.6,
+  "avg_planning_latency_s": 1214.363,
+  "avg_total_latency_s": 1959.749,
+  "p50_planning_latency_s": 1056.956,
+  "p95_planning_latency_s": 2113.895,
+  "http_status_distribution": {
+    "200": 100
+  },
+  "total_tp": 162,
+  "total_fp": 124,
+  "total_fn": 64,
+  "micro_precision": 0.5664,
+  "micro_recall": 0.7168,
+  "micro_f1": 0.6328,
+  "macro_precision": 0.72,
+  "macro_recall": 0.72,
+  "macro_f1": 0.72,
+  "global_accuracy": 0.4629,
+  "global_jaccard": 0.4629,
+  "source": "results/qwen-30b/tmdb-dist4/responses.json"
+}
